@@ -1,18 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState,useContext } from 'react';
 import { View, StyleSheet, Image} from 'react-native';
 import { TextInput, Button, Menu, Text } from 'react-native-paper';
 import { scale, verticalScale, moderateScale } from 'react-native-size-matters';
-const LoginScreen = () => {
+import { RoleContext } from '../context/RoleContext';
+const LoginScreen = ({navigation}) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState('');
+  const [roleSelection, setRoleSelection] = useState('');
   const [visible, setVisible] = useState(false);
-
+  const { setRole } = useContext(RoleContext);
   const roles = ['Worker', 'Super User', 'Supervisor'];
 
   const openMenu = () => setVisible(true);
   const closeMenu = () => setVisible(false);
 
+  const handleLogin=()=>{
+    setRole(roleSelection);
+    navigation.navigate('View Stock Worker');
+  }
   return (
  
     <View style={styles.container}>
@@ -50,12 +55,13 @@ const LoginScreen = () => {
         style={styles.menu}
         anchorPosition='top'
         contentStyle={{backgroundColor:'white'}}
+        
       >
         {roles.map((roleOption, index) => (
           <Menu.Item
             key={index}
             onPress={() => {
-              setRole(roleOption);
+              setRoleSelection(roleOption);
               closeMenu();
             }}
             title={roleOption}
@@ -66,7 +72,7 @@ const LoginScreen = () => {
       {/* Login Button */}
       <Button
         mode="contained"
-        onPress={() => console.log('Login')}
+        onPress={handleLogin}
         style={styles.loginButton}
         labelStyle={styles.loginButtonText}
       >
