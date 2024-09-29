@@ -9,6 +9,7 @@ import UpdateStockWorkerScreen from './screens/UpdateStockWorkerScreen';
 import ReorderWorkerScreen from './screens/ReorderWorkerScreen';
 import { RoleProvider, RoleContext } from './context/RoleContext'; // Your Role Context
 import { scale,verticalScale } from 'react-native-size-matters';
+import CoverPage from './screens/CoverScreen';
 const Drawer = createDrawerNavigator();
 
 
@@ -56,7 +57,8 @@ const RoleBasedDrawer = () => {
   const { role } = useContext(RoleContext); // Get the current role
 
   return (
-    <Drawer.Navigator initialRouteName="Login" drawerContent={(props) => <CustomDrawerContent {...props} />}  screenOptions={{headerShown:role!=null?true:false,drawerLabelStyle:{right:scale(20)}}}>
+    <Drawer.Navigator initialRouteName="Cover" drawerContent={(props) => <CustomDrawerContent {...props} />}  screenOptions={{drawerLabelStyle:{right:scale(20)}}}>
+<Drawer.Screen name="Cover" component={CoverPage} options={{headerShown:false}}/>
       {/* Conditionally render screens based on the role */}
       {role === 'Worker' && <Drawer.Screen name="View Stock Worker" options={{drawerIcon: ({ color, size }) => (
               <Image
@@ -75,7 +77,7 @@ const RoleBasedDrawer = () => {
             />)}} component={ReorderWorkerScreen} />}
       {role === 'Super User' && <Drawer.Screen name="Super User" component={SuperUserScreen} />}
       {role === 'Supervisor' && <Drawer.Screen name="Supervisor" component={SupervisorScreen} />}
-      {role===null && <Drawer.Screen name="Login" component={LoginScreen} />}
+   <Drawer.Screen name="Login" component={LoginScreen} options={{headerShown:false}} />
     </Drawer.Navigator>
   );
 };

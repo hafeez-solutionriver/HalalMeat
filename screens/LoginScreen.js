@@ -1,25 +1,76 @@
 import React, { useState,useContext } from 'react';
-import { View, StyleSheet, Image} from 'react-native';
-import { TextInput, Button, Menu, Text } from 'react-native-paper';
+import { View, StyleSheet, Image, Alert } from 'react-native';
+import { TextInput, Button, Menu } from 'react-native-paper';
 import { scale, verticalScale, moderateScale } from 'react-native-size-matters';
+import { getDatabase, ref, child, get } from 'firebase/database';  // Firebase Realtime Database
+import { initializeApp, getApps } from 'firebase/app';
 import { RoleContext } from '../context/RoleContext';
-const LoginScreen = ({navigation}) => {
+const firebaseConfig = {
+  apiKey: "AIzaSyD2a7gjEbl5aw0RjA-i4uTFNDgWsIm71x8",
+  authDomain: "halal-meat-19aff.firebaseapp.com",  // Typically derived from project_id
+  projectId: "halal-meat-19aff",
+  storageBucket: "halal-meat-19aff.appspot.com",
+  messagingSenderId: "765038496812",  // Derived from project_number
+  appId: "1:765038496812:android:7bf87975e775cf80c85589",
+  measurementId: "" // Optional, leave blank if not using analytics
+};
+
+let app;
+if (getApps().length === 0) {
+  app = initializeApp(firebaseConfig);
+} else {
+  app = getApps()[0]; // Use the already initialized app
+}
+const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [roleSelection, setRoleSelection] = useState('');
-  const [visible, setVisible] = useState(false);
-  const { setRole } = useContext(RoleContext);
-  const roles = ['Worker', 'Super User', 'Supervisor'];
+  const { role } = useContext(RoleContext);
+  // Firebase Realtime Database reference
+  const dbRef = ref(getDatabase(app));
 
-  const openMenu = () => setVisible(true);
-  const closeMenu = () => setVisible(false);
+  const handleLogin = async () => {
+    if(email!='' && password!='' && roleSelection!='')
+    {
 
-  const handleLogin=()=>{
-    setRole(roleSelection);
-    navigation.navigate('View Stock Worker');
+    try {
+      // Fetch users from Firebase Realtime Database
+      const snapshot = await get(child(dbRef, 'users'));
+      if (snapshot.exists()) {
+        const users = snapshot.val();
+        let userFound = false;
+
+        // Iterate through the users to validate email and password
+        for (let userId in users) {
+          const user = users[userId];
+          if (user.email === email && user.password === password && user.role===role) {
+           
+            userFound = true;
+            // Navigate based on role
+            if (role === 'Worker') {
+              navigation.navigate('View Stock Worker');
+            }
+            break;
+          }
+        }
+
+        if (!userFound) {
+          Alert.alert('Login Failed', 'Invalid email or password.');
+        }
+      } else {
+        Alert.alert('Error', 'No users found in the database.');
+      }
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Error', 'Something went wrong while fetching user data.');
+    }
   }
+  else
+  {
+    Alert.alert('Error', 'Kindly fill the fields & Select a role');
+  }
+  };
+
   return (
- 
     <View style={styles.container}>
       {/* App Icon */}
       <Image
@@ -34,7 +85,8 @@ const LoginScreen = ({navigation}) => {
         onChangeText={text => setEmail(text)}
         mode="outlined"
         style={styles.input}
-        
+        theme={{ colors: { primary: '#03A9F4', text: '#000' } }} // Customize border color and text color
+
       />
 
       {/* Password Field */}
@@ -45,30 +97,8 @@ const LoginScreen = ({navigation}) => {
         secureTextEntry
         mode="outlined"
         style={styles.input}
+        theme={{ colors: { primary: '#03A9F4', text: '#000' } }} // Customize border color and text color
       />
-
-      {/* Role Dropdown */}
-      <Menu
-        visible={visible}
-        onDismiss={closeMenu}
-        anchor={<Button onPress={openMenu} style={styles.roleSelection}>Select a Role ▼</Button>}
-        style={styles.menu}
-        anchorPosition='top'
-        contentStyle={{backgroundColor:'white'}}
-        
-      >
-        {roles.map((roleOption, index) => (
-          <Menu.Item
-            key={index}
-            onPress={() => {
-              setRoleSelection(roleOption);
-              closeMenu();
-            }}
-            title={roleOption}
-          />
-        ))}
-      </Menu>
-
       {/* Login Button */}
       <Button
         mode="contained"
@@ -79,7 +109,6 @@ const LoginScreen = ({navigation}) => {
         Login
       </Button>
     </View>
-  
   );
 };
 
@@ -89,6 +118,7 @@ const styles = StyleSheet.create({
     padding: moderateScale(16),
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor:'rgb(250,250,250)'
   },
   loginIcon: {
     width: scale(150),
@@ -98,17 +128,10 @@ const styles = StyleSheet.create({
   input: {
     width: '100%',
     marginBottom: verticalScale(16),
-    backgroundColor:'white',
-    
-    
+    backgroundColor: 'white',
   },
-  menu: {
-
-    width: '90%',
-    left:scale(15),
-  },
+  
   loginButton: {
-    marginTop: verticalScale(24),
     width: '100%',
     height: verticalScale(50),
     justifyContent: 'center',
@@ -116,10 +139,9 @@ const styles = StyleSheet.create({
   },
   loginButtonText: {
     fontSize: scale(18),
+    fontFamily:'Ubuntu_700Bold'
   },
-  roleSelection:{
-    right:scale(100)
-  }
+  
 });
 
 export default LoginScreen;
