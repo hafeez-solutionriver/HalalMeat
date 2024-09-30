@@ -1,50 +1,22 @@
-import React, { useEffect, useContext, useCallback, useState } from 'react';
+import React, {  useContext } from 'react';
 import { View, StyleSheet, Image, Text, TouchableOpacity  } from 'react-native';
 import { RoleContext } from '../context/RoleContext'; // Role Context
 import { scale, verticalScale, moderateScale } from 'react-native-size-matters';
-import * as SplashScreen from 'expo-splash-screen';  // Import SplashScreen API
-import { useFonts, Ubuntu_400Regular,Ubuntu_700Bold } from '@expo-google-fonts/ubuntu';
-
-SplashScreen.preventAutoHideAsync(); // Prevents the splash screen from auto-hiding
 
 const CoverPage = ({ navigation }) => {
-  const { setRole } = useContext(RoleContext);  // Use RoleContext to set role
+  const { setRole,isLoggedIn } = useContext(RoleContext);  // Use RoleContext to set role
+  if(isLoggedIn)
+  {
+    navigation.navigate('Login');
+  }
   const roles = ['Worker', 'Super User', 'Supervisor'];
-  const [appIsReady, setAppIsReady] = useState(false); // State to track readiness of the app
-
-  // Load fonts using @expo-google-fonts/ubuntu
-  const [fontsLoaded] = useFonts({
-    Ubuntu_400Regular,
-    Ubuntu_700Bold  // Load the Ubuntu font
-  });
-
-  useEffect(() => {
-    if (fontsLoaded) {
-      setAppIsReady(true); // Set app as ready when fonts are loaded
-      SplashScreen.hideAsync(); // Hide the splash screen once the app is ready
-    }
-  }, [fontsLoaded]);
-
   const handleRoleSelect = (selectedRole) => {
     setRole(selectedRole);  // Set the selected role in the context
     navigation.navigate('Login');  // Navigate to Login screen
   };
 
-  
-
-  // Callback to prevent the splash screen from hiding before the app is ready
-  const onLayoutRootView = useCallback(async () => {
-    if (appIsReady) {
-      await SplashScreen.hideAsync(); // Hide the splash screen when the app is ready
-    }
-  }, [appIsReady]);
-
-  if (!appIsReady) {
-    return null;  // Render nothing until the app is ready
-  }
-
   return (
-    <View style={styles.container} onLayout={onLayoutRootView}>
+    <View style={styles.container}>
       {/* Card containing logo and heading */}
       <View style={styles.card}>
         {/* Centered Logo */}
