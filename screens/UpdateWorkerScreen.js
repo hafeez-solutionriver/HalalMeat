@@ -46,8 +46,10 @@ const UpdateWorkerScreen = () => {
         name: workerName,
         email: workerEmail,
         password: workerPassword,
+      }).then(()=>{
+        Alert.alert('Success', 'Employee updated successfully!',[{text: 'OK', onPress: () => navigation.goBack()}]);
       });
-      Alert.alert('Success', 'Employee updated successfully!');
+     
     } else {
       // Add new worker logic
       const newWorkerRef = push(workersRef); // Generate a new unique ID
@@ -55,12 +57,14 @@ const UpdateWorkerScreen = () => {
         name: workerName,
         email: workerEmail,
         password: workerPassword,
+      }).then(()=>{
+        Alert.alert('Success', 'New Employee Added successfully!',[{text: 'OK', onPress: () => navigation.goBack()}]);
       });
-      Alert.alert('Success', 'New worker added successfully!');
+     
     }
 
     // Go back to the previous screen after the operation
-    navigation.goBack();
+    
   };
 
   return (

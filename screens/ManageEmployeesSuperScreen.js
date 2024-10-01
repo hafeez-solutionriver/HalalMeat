@@ -29,11 +29,6 @@ const ManageEmployeesSuperScreen = ({navigation}) => {
   let isEdit;
   // Mock data for employees
   const [employees, setEmployees] = useState([]);
-
-  useEffect(() => {  
-    fetchEmployees(setEmployees);
-  }, []);
-
   useFocusEffect(
     React.useCallback(() => {
       fetchEmployees(setEmployees);
@@ -77,8 +72,8 @@ const ManageEmployeesSuperScreen = ({navigation}) => {
         <Text style={styles.employeeEmail}>{item.email}</Text>
       </Card.Content>
       <Card.Actions >
-        <Button onPress={() => handleEdit(item)} labelStyle={{fontFamily:'Ubuntu_700Bold'}}>Edit</Button>
-        <Button onPress={() => handleDelete(item)} labelStyle={{fontFamily:'Ubuntu_700Bold'}}>Delete</Button>
+        <Button style={{width:'48%'}} onPress={() => handleEdit(item)} labelStyle={{fontFamily:'Ubuntu_700Bold'}}>Edit</Button>
+        <Button style={{width:'50%'}} onPress={() => handleDelete(item)} labelStyle={{fontFamily:'Ubuntu_700Bold'}}>Delete</Button>
       </Card.Actions>
     </Card>
   );

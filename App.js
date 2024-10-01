@@ -16,6 +16,7 @@ import GenerateReportSupervisorScreen from './screens/GenerateReportSupervisorSc
 import * as SplashScreen from 'expo-splash-screen';  // Import SplashScreen API
 import { useFonts, Ubuntu_400Regular,Ubuntu_700Bold } from '@expo-google-fonts/ubuntu';
 import UpdateWorkerScreen from './screens/UpdateWorkerScreen';
+import AddProductScreen from './screens/AddProductScreen';
 SplashScreen.preventAutoHideAsync(); // Prevents the splash screen from auto-hiding
 
 const Drawer = createDrawerNavigator();
@@ -107,6 +108,11 @@ const RoleBasedDrawer = () => {
         component={UpdateWorkerScreen}
         options={{ headerShown: false, drawerItemStyle: { display: 'none' } }} // Hide this from the drawer
       />
+      <Drawer.Screen
+        name="AddProduct"
+        component={AddProductScreen}
+        options={{ headerShown: false, drawerItemStyle: { display: 'none' } }} // Hide this from the drawer
+      />
     </Drawer.Navigator>
   );
 };
@@ -169,7 +175,7 @@ if (!appIsReady) {
   return (
     <RoleProvider>
       <PaperProvider>
-        <StatusBar backgroundColor="#03A9F1" barStyle="light-content"/>
+        <StatusBar backgroundColor="#03A9F1" />
         <NavigationContainer onLayoutRootView={onLayoutRootView}>
           <RoleBasedDrawer />
         </NavigationContainer>
