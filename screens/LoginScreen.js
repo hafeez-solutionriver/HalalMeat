@@ -52,10 +52,25 @@ const LoginScreen = ({ navigation }) => {
   }, []);
  
   const handleLogin = async () => {
+    if(email!='' && password!='')
+    {
 
-    setIsLoggedIn(prev=>!prev);
-    // InsertItem('isLoggedIn',true);
-   
+    try {
+      // Fetch users from Firebase Realtime Database
+      const snapshot = await get(child(dbRef, role));
+      if (snapshot.exists()) {
+        const users = snapshot.val();
+        let userFound = false;
+
+        // Iterate through the users to validate email and password
+        for (let userId in users) {
+          const user = users[userId];
+          if (user.email === email && user.password === password) {
+           
+            userFound = true;
+      // Navigate based on role
+      setIsLoggedIn(prev=>!prev);
+    
       if(role=='Worker')
       {
         navigation.navigate('View Stock Worker');
@@ -68,51 +83,26 @@ const LoginScreen = ({ navigation }) => {
         navigation.navigate('View Stock');
 
       }
+            break;
+          }
+        }
 
-      
+        if (!userFound) {
+          Alert.alert('Login Failed', 'Invalid email or password.');
+        }
+      } else {
+        Alert.alert('Error', 'No users found in the database.');
+      }
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Error', 'Something went wrong while fetching user data.');
+    }
   }
-
-  // const handleLogin = async () => {
-  //   if(email!='' && password!='' && roleSelection!='')
-  //   {
-
-  //   try {
-  //     // Fetch users from Firebase Realtime Database
-  //     const snapshot = await get(child(dbRef, 'users'));
-  //     if (snapshot.exists()) {
-  //       const users = snapshot.val();
-  //       let userFound = false;
-
-  //       // Iterate through the users to validate email and password
-  //       for (let userId in users) {
-  //         const user = users[userId];
-  //         if (user.email === email && user.password === password && user.role===role) {
-           
-  //           userFound = true;
-  //           // Navigate based on role
-  //           if (role === 'Worker') {
-  //             navigation.navigate('View Stock Worker');
-  //           }
-  //           break;
-  //         }
-  //       }
-
-  //       if (!userFound) {
-  //         Alert.alert('Login Failed', 'Invalid email or password.');
-  //       }
-  //     } else {
-  //       Alert.alert('Error', 'No users found in the database.');
-  //     }
-  //   } catch (error) {
-  //     console.error(error);
-  //     Alert.alert('Error', 'Something went wrong while fetching user data.');
-  //   }
-  // }
-  // else
-  // {
-  //   Alert.alert('Error', 'Kindly fill the fields & Select a role');
-  // }
-  // };
+  else
+  {
+    Alert.alert('Error', 'Kindly fill the fields');
+  }
+  };
 
   return (
     <View style={styles.container}>

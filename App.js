@@ -1,12 +1,11 @@
 import React, { useContext, useEffect,useState,useCallback } from 'react';
-import { View, Button,Image,StyleSheet,Text,StatusBar } from 'react-native';
+import { View,Image,StyleSheet,Text,StatusBar } from 'react-native';
 import { Provider as PaperProvider } from 'react-native-paper';
 import { createDrawerNavigator,DrawerContentScrollView,DrawerItemList } from '@react-navigation/drawer';
 import { NavigationContainer } from '@react-navigation/native';
 import LoginScreen from './screens/LoginScreen'; // Your Login Screen
 import ViewStockWorkerScreen from './screens/ViewStockWorkerScreen';
 import UpdateStockWorkerScreen from './screens/UpdateStockWorkerScreen';
-import ReorderWorkerScreen from './screens/ReorderWorkerScreen';
 import { RoleProvider, RoleContext } from './context/RoleContext'; // Your Role Context
 import { scale } from 'react-native-size-matters';
 import CoverPage from './screens/CoverScreen';
@@ -16,7 +15,7 @@ import ViewStockSupervisorScreen from './screens/ViewStockSupervisorScreen';
 import GenerateReportSupervisorScreen from './screens/GenerateReportSupervisorScreen'
 import * as SplashScreen from 'expo-splash-screen';  // Import SplashScreen API
 import { useFonts, Ubuntu_400Regular,Ubuntu_700Bold } from '@expo-google-fonts/ubuntu';
-
+import UpdateWorkerScreen from './screens/UpdateWorkerScreen';
 SplashScreen.preventAutoHideAsync(); // Prevents the splash screen from auto-hiding
 
 const Drawer = createDrawerNavigator();
@@ -77,11 +76,7 @@ const RoleBasedDrawer = () => {
               source={require('./assets/updatestock.png')}
               style={{ width: size, height: size }}
             />)}} component={UpdateStockWorkerScreen} />}
-      {role === 'Worker' && <Drawer.Screen name="Reorder Stock Worker" options={{drawerIcon: ({ color, size }) => (
-              <Image
-              source={require('./assets/reorder.png')}
-              style={{ width: size, height: size }}
-            />)}} component={ReorderWorkerScreen} />}
+      
       {role === 'Super User' && <Drawer.Screen name="Manage Employees" options={{drawerIcon: ({ color, size }) => (
               <Image
               source={require('./assets/manageemployees.png')}
@@ -107,12 +102,18 @@ const RoleBasedDrawer = () => {
             component={GenerateReportSupervisorScreen} />}
 
     {(!isLoggedIn) && <Drawer.Screen name="Login" component={LoginScreen} options={{headerShown:false}} />}
+    <Drawer.Screen
+        name="UpdateEmployee"
+        component={UpdateWorkerScreen}
+        options={{ headerShown: false, drawerItemStyle: { display: 'none' } }} // Hide this from the drawer
+      />
     </Drawer.Navigator>
   );
 };
 
 const styles = StyleSheet.create({
   drawerHeader: {
+    
     alignItems: 'center',
     paddingVertical: 20,
     borderBottomWidth: 1,
