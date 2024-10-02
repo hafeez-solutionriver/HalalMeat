@@ -1,12 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, {  useState } from 'react';
 import { Modal, View, Text, Animated, TouchableOpacity, StyleSheet } from 'react-native';
 import { TextInput } from 'react-native-paper';
 import { moderateScale, scale, verticalScale } from 'react-native-size-matters';
 
-const CustomModal = ({ visible, onUpdate, onClose,title, initialValue }) => {
-
-const [inputValue, setInputValue] = useState(initialValue || '');
-
+const CustomModal = ({ visible, onUpdate, onClose,title, initialValue,label }) => {
+const [inputValue, setInputValue] = useState(initialValue);
   const slideAnim = useState(new Animated.Value(-500))[0]; // Slide animation (off-screen)
   const fadeAnim = useState(new Animated.Value(0))[0]; // Fade animation
 
@@ -44,8 +42,9 @@ const [inputValue, setInputValue] = useState(initialValue || '');
   };
 
   const handleUpdate = () => {
+  
     onUpdate(inputValue); // Pass the input value back to the parent
-    closeModal(); // Close modal after update
+   
   };
 
   if (visible) {
@@ -60,7 +59,7 @@ const [inputValue, setInputValue] = useState(initialValue || '');
           
         
         <TextInput
-        label="Reorder Level"
+        label={label}
         value={inputValue}
         onChangeText={setInputValue}
         keyboardType="numeric"

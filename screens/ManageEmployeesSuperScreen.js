@@ -2,14 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, Alert } from 'react-native';
 import { Card, Button } from 'react-native-paper';
 import { moderateScale, scale, verticalScale } from 'react-native-size-matters';
-import { useFocusEffect } from '@react-navigation/native';
-import { getDatabase, ref, child, get,remove } from 'firebase/database'; // Firebase Realtime Database import
+import { getDatabase, ref,remove,onValue } from 'firebase/database'; // Firebase Realtime Database import
 
 const fetchEmployees = async (setEmployees) => {
-  const dbRef = ref(getDatabase());
-  try {
+  const dbRef = ref(getDatabase(), 'Worker');
+  
     // Fetch data from 'Worker' node
-    const snapshot = await get(child(dbRef, 'Worker'));
+    await onValue(dbRef, (snapshot)=>{
     if (snapshot.exists()) {
       const users = snapshot.val();
       const employeeList = Object.keys(users).map((userId) => ({
@@ -19,21 +18,18 @@ const fetchEmployees = async (setEmployees) => {
       setEmployees(employeeList);
     } else {
       console.log("No data available");
-      setEmployees([]);
-    }
-  } catch (error) {
-    console.error("Error fetching employees:", error);
-  }
-};
+      setEmployees([]);}
+    });
+  
+  } 
+  
 const ManageEmployeesSuperScreen = ({navigation}) => {
   let isEdit;
   // Mock data for employees
   const [employees, setEmployees] = useState([]);
-  useFocusEffect(
-    React.useCallback(() => {
-      fetchEmployees(setEmployees);
-    }, [navigation])
-  );
+  useEffect(()=>{
+    fetchEmployees(setEmployees);
+  },[])
   // Handle edit employee
   const handleEdit = (item) => {
     isEdit=true;

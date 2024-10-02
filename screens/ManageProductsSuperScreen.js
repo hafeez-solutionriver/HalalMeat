@@ -2,15 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, StyleSheet,Alert } from 'react-native';
 import { Card, Button } from 'react-native-paper';
 import { moderateScale, scale, verticalScale } from 'react-native-size-matters';
-import { getDatabase, ref, child, get,remove,update } from 'firebase/database'; // Firebase Realtime Database import
-import { useFocusEffect } from '@react-navigation/native';
+import { getDatabase, ref,remove,update,onValue } from 'firebase/database'; // Firebase Realtime Database import
 import CustomModal from '../components/CustomModel';
 let currentItem;
-const fetchProducts = async (setProducts) => {
-  const dbRef = ref(getDatabase());
-  try {
-    // Fetch data from 'Products' node
-    const snapshot = await get(child(dbRef, 'products'));
+const fetchProducts = async(setProducts) => {
+  const dbRef = ref(getDatabase(), 'products');
+  await onValue(dbRef, (snapshot) => {
     if (snapshot.exists()) {
       const products = snapshot.val();
       const productList = Object.keys(products).map((productId) => ({
@@ -22,16 +19,14 @@ const fetchProducts = async (setProducts) => {
       console.log("No data available");
       setProducts([]);
     }
-  } catch (error) {
-    console.error("Error fetching products:", error);
-  }
+  });
 };
+
 
 const ManageProductsSuperScreen = ({navigation}) => {
   const [products, setProducts] = useState([]);
   const [isModalVisible, setModalVisible] = useState(false);
   const [value, setValue] = useState('');
-
   const handleUpdateModal = async(reorderLevel) => {
     const db = getDatabase();
     reorderLevel = parseInt(reorderLevel);
@@ -49,18 +44,20 @@ const ManageProductsSuperScreen = ({navigation}) => {
     await update(productRef, { 
       ...currentItem,
     }).then(()=>{
-      Alert.alert('Success', 'Reorder Level Updated!',[{ text: 'OK', onPress: () => fetchProducts(setProducts)}]);
+      setModalVisible(false)
+      Alert.alert('Success', 'Reorder Level Updated!');
     });
     
   };
 
   const openModal = (item) => {
     currentItem=item;
+    setValue(item.reorderLevel);
     setModalVisible(true); // Show the modal
   };
   const removeFromDatabase = async(id)=>{
     const taskRef = ref(getDatabase(), `products/${id}`);
-    await remove(taskRef).then(()=>setProducts(prev => prev.filter(prod => prod.id !== id))).catch((reason)=>console.log(reason));
+    await remove(taskRef).then(Aler.alert('Successfully Removed!')).catch((reason)=>Alert.alert(reason));
   
   }
   // Handle delete employee
@@ -75,13 +72,9 @@ const ManageProductsSuperScreen = ({navigation}) => {
      ]
    );
   };
-
-  useFocusEffect(
-    React.useCallback(() => {
-      fetchProducts(setProducts);
-      
-    }, [navigation])
-  );
+  useEffect(()=>{
+    fetchProducts(setProducts)
+  },[]);
 
   // Filter products by 'frozen' status
   const frozenFalseProducts = products.filter(product => product.frozen === false);
@@ -97,7 +90,7 @@ const ManageProductsSuperScreen = ({navigation}) => {
 
   const handleUpdate = async(item)=>{
     setValue(item.reorderLevel);
-  openModal(item);
+    openModal(item);
     
   }
  // Edit existing worker logic
@@ -130,11 +123,12 @@ const ManageProductsSuperScreen = ({navigation}) => {
           <Button style={{width:'48%'}} labelStyle={styles.buttonLabel} onPress={()=>handleUpdate(item)}>Update Stock</Button>
           <Button style={{width:'50%'}} labelStyle={styles.buttonLabel} onPress={()=>handleDelete(item)}>Delete Product</Button>
         </Card.Actions>
-        <CustomModal
+       <CustomModal
+       label={"Reorder Level"}
         visible={isModalVisible}
-        title={`Update Reorder from ${item.reorderLevel} To` }
+        title={`Update Reorder from ${value} To` }
         onUpdate={handleUpdateModal}
-        onClose={() => setModalVisible(false)}
+        onClose={() => {setModalVisible(false)}}
         initialValue={value}
       />
       </Card>
