@@ -3,7 +3,7 @@ import { View, StyleSheet, Text, Alert } from 'react-native';
 import { TextInput, Button } from 'react-native-paper';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { scale, verticalScale, moderateScale } from 'react-native-size-matters';
-import { getDatabase, ref, update, push } from 'firebase/database'; // Firebase functions
+import { getDatabase, ref, update, push, get, query, orderByChild, equalTo } from 'firebase/database'; // Firebase functions
 
 const UpdateWorkerScreen = () => {
   const navigation = useNavigation();
@@ -40,33 +40,59 @@ const UpdateWorkerScreen = () => {
     }
 
     if (isEdit) {
-      // Edit existing worker logic
-      const workerRef = ref(db, `Worker/${item.id}`);
-      await update(workerRef, {
-        name: workerName,
-        email: workerEmail,
-        password: workerPassword,
-      }).then(()=>{
-        Alert.alert('Success', 'Employee updated successfully!',[{text: 'OK', onPress: () => navigation.goBack()}]);
-      });
-     
+      // Check if email exists (excluding the current worker being edited)
+      try {
+        const emailQuery = query(workersRef, orderByChild('email'), equalTo(workerEmail));
+        const snapshot = await get(emailQuery);
+
+        // Filter out the current worker's data from the snapshot
+        const isEmailTaken = snapshot.exists() && Object.keys(snapshot.val()).some(key => key !== item.id);
+
+        if (isEmailTaken) {
+          Alert.alert('Error', 'Email address already exists.');
+          return;
+        } else {
+          // Proceed to update the worker
+          const workerRef = ref(db, `Worker/${item.id}`);
+          await update(workerRef, {
+            name: workerName,
+            email: workerEmail,
+            password: workerPassword,
+          }).then(() => {
+            Alert.alert('Success', 'Employee updated successfully!', [{ text: 'OK', onPress: () => navigation.goBack() }]);
+          });
+        }
+      } catch (error) {
+        console.log('Error checking email during update:', error);
+        Alert.alert('Error', 'There was an error updating the employee. Please try again.');
+      }
     } else {
-      // Add new worker logic
-      const newWorkerRef = push(workersRef); // Generate a new unique ID
-      await update(newWorkerRef, {
-        name: workerName,
-        email: workerEmail,
-        password: workerPassword,
-      }).then(()=>{
-        Alert.alert('Success', 'New Employee Added successfully!',[{text: 'OK', onPress: () => navigation.goBack()}]);
-      });
-     
+      // Add new worker logic with email validation
+      try {
+        // Query the database to check if the email already exists
+        const emailQuery = query(workersRef, orderByChild('email'), equalTo(workerEmail));
+        const snapshot = await get(emailQuery);
+
+        if (snapshot.exists()) {
+          // Email already exists
+          Alert.alert('Error', 'Email address already exists.');
+        } else {
+          // Add the new worker if email doesn't exist
+          const newWorkerRef = push(workersRef); // Generate a new unique ID
+          await update(newWorkerRef, {
+            name: workerName,
+            email: workerEmail,
+            password: workerPassword,
+          }).then(() => {
+            Alert.alert('Success', 'New Employee added successfully!', [{ text: 'OK', onPress: () => navigation.goBack() }]);
+          });
+        }
+      } catch (error) {
+        console.log('Error checking email during creation:', error);
+        Alert.alert('Error', 'There was an error adding the employee. Please try again.');
+      }
     }
-
-    // Go back to the previous screen after the operation
-    
   };
-
   return (
     <View style={styles.container}>
       <Text style={styles.heading}>{isEdit ? 'Edit Employee' : 'Add Worker'}</Text>
@@ -105,7 +131,7 @@ const UpdateWorkerScreen = () => {
         style={styles.submitButton}
         labelStyle={styles.submitButtonText}
       >
-        {isEdit ? 'Edit' : 'Add'}
+        {isEdit ? 'Update' : 'Add'}
       </Button>
     </View>
   );
