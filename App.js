@@ -5,8 +5,8 @@ import { createDrawerNavigator,DrawerContentScrollView,DrawerItemList } from '@r
 import { NavigationContainer } from '@react-navigation/native';
 import LoginScreen from './screens/LoginScreen'; // Your Login Screen
 import ViewStockWorkerScreen from './screens/ViewStockWorkerScreen';
-import UpdateStockWorkerScreen from './screens/UpdateStockWorkerScreen';
 import { RoleProvider, RoleContext } from './context/RoleContext'; // Your Role Context
+import UpdateWorkerScreen from './screens/UpdateWorkerScreen';
 import { scale } from 'react-native-size-matters';
 import CoverPage from './screens/CoverScreen';
 import ManageProductsSuperScreen from './screens/ManageProductsSuperScreen';
@@ -15,7 +15,6 @@ import ViewStockSupervisorScreen from './screens/ViewStockSupervisorScreen';
 import GenerateReportSupervisorScreen from './screens/GenerateReportSupervisorScreen'
 import * as SplashScreen from 'expo-splash-screen';  // Import SplashScreen API
 import { useFonts, Ubuntu_400Regular,Ubuntu_700Bold } from '@expo-google-fonts/ubuntu';
-import UpdateWorkerScreen from './screens/UpdateWorkerScreen';
 import AddProductScreen from './screens/AddProductScreen';
 SplashScreen.preventAutoHideAsync(); // Prevents the splash screen from auto-hiding
 
@@ -72,11 +71,6 @@ const RoleBasedDrawer = () => {
               source={require('./assets/viewstock.png')}
               style={{ width: size, height: size }}
             />)}} component={ViewStockWorkerScreen} />}
-      {role === 'Worker' && <Drawer.Screen name="Update Stock Worker" options={{drawerIcon: ({ color, size }) => (
-              <Image
-              source={require('./assets/updatestock.png')}
-              style={{ width: size, height: size }}
-            />)}} component={UpdateStockWorkerScreen} />}
       
       {role === 'Super User' && <Drawer.Screen name="Manage Employees" options={{drawerIcon: ({ color, size }) => (
               <Image
@@ -89,12 +83,12 @@ const RoleBasedDrawer = () => {
               style={{ width: size, height: size }}
             />)}}
             component={ManageProductsSuperScreen} />}
-      {role === 'Supervisor' && <Drawer.Screen name="View Stock" options={{drawerIcon: ({ color, size }) => (
+      {role === 'Supervisor' && <Drawer.Screen name="View Stock" initialParams={{ isSupervisor: true }} options={{drawerIcon: ({ color, size }) => (
               <Image
               source={require('./assets/viewstock.png')}
               style={{ width: size, height: size }}
             />)}}
-             component={ViewStockSupervisorScreen} />}
+             component={ViewStockWorkerScreen} />}
       {role === 'Supervisor' && <Drawer.Screen name="Generate Report" options={{drawerIcon: ({ color, size }) => (
               <Image
               source={require('./assets/generatereport.png')}
@@ -104,6 +98,7 @@ const RoleBasedDrawer = () => {
 
     {(!isLoggedIn) && <Drawer.Screen name="Login" component={LoginScreen} options={{headerShown:false}} />}
     <Drawer.Screen
+        
         name="UpdateEmployee"
         component={UpdateWorkerScreen}
         options={{ headerShown: false, drawerItemStyle: { display: 'none' } }} // Hide this from the drawer

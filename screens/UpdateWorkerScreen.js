@@ -114,7 +114,6 @@ const UpdateWorkerScreen = () => {
         style={styles.input}
         theme={{ colors: { primary: '#03A9F4', text: '#000' } }}
       />
-
       <TextInput
         label="Employee Password"
         value={workerPassword}

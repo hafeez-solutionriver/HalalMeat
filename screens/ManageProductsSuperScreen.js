@@ -107,8 +107,7 @@ const ManageProductsSuperScreen = ({ navigation }) => {
   const paginatedProducts = [];
   let itemCount = 0;
   let index = (currentPage - 1) * ITEMS_PER_PAGE;
-console.log('index',index)
-const hasHeaderBeforeIndex = (index) => {
+  const hasHeaderBeforeIndex = (index) => {
   for (let i = 0; i < index; i++) {
     if (combinedData[i].type === 'header') {
       return true; // Found a header before the current index
