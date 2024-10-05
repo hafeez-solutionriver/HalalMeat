@@ -9,7 +9,7 @@ let currentItem;
 
 const ITEMS_PER_PAGE = 3; // Display 3 items per page
 
-const fetchProducts = async (setProducts) => {
+const fetchProducts = async (setProducts, setTotalPages) => {
   const dbRef = ref(getDatabase(), 'products');
   await onValue(dbRef, (snapshot) => {
     if (snapshot.exists()) {
@@ -19,9 +19,15 @@ const fetchProducts = async (setProducts) => {
         ...products[productId],
       }));
       setProducts([...productList]); // Store all products
+
+      // Calculate the total number of pages after receiving the products
+      const nonHeaderItems = productList.filter(item => !item.type || item.type !== 'header');
+      const totalPages = Math.ceil(nonHeaderItems.length / ITEMS_PER_PAGE);
+      setTotalPages(totalPages);
     } else {
       console.log("No data available");
       setProducts([]);
+      setTotalPages(1); // Reset to 1 page if no products are available
     }
   });
 };
@@ -29,11 +35,14 @@ const fetchProducts = async (setProducts) => {
 const ManageProductsSuperScreen = ({ navigation }) => {
   const [products, setProducts] = useState([]);
   const [currentPage, setCurrentPage] = useState(1); // Track the current page
+  const [totalPages, setTotalPages] = useState(1); // Keep track of the total pages
   const [isModalVisible, setModalVisible] = useState(false);
   const [value, setValue] = useState('');
 
-  // Calculate the total number of pages
-  const totalPages = Math.ceil(products.length / ITEMS_PER_PAGE);
+  // Whenever products update, recalculate the total pages
+  useEffect(() => {
+    fetchProducts(setProducts, setTotalPages);
+  }, []);
 
   const handleUpdateModal = async (reorderLevel) => {
     const db = getDatabase();
@@ -70,7 +79,6 @@ const ManageProductsSuperScreen = ({ navigation }) => {
       .catch((reason) => Alert.alert(reason));
   };
 
-  // Handle delete employee
   const handleDelete = (item) => {
     Alert.alert(
       'Delete Product',
@@ -82,15 +90,53 @@ const ManageProductsSuperScreen = ({ navigation }) => {
     );
   };
 
-  useEffect(() => {
-    fetchProducts(setProducts);
-  }, []);
+  // Filter products by 'frozen' status
+  const frozenFalseProducts = products.filter(product => product.frozen === false);
+  const frozenTrueProducts = products.filter(product => product.frozen === true);
+  
+  // Combine lists with a header row for frozen products
+  let combinedData = [
+    ...frozenFalseProducts,
+    ...(frozenTrueProducts.length > 0
+      ? [{ type: 'header', title: 'Frozen Products' }, ...frozenTrueProducts] // Conditionally add header and frozen products
+      : []),
+  ];
+ 
+  // Paginate the products list, excluding the header from counting as a product
+  const paginatedProducts = [];
+  let itemCount = 0;
+  let index = (currentPage - 1) * ITEMS_PER_PAGE;
+console.log('index',index)
+const hasHeaderBeforeIndex = (index) => {
+  for (let i = 0; i < index; i++) {
+    if (combinedData[i].type === 'header') {
+      return true; // Found a header before the current index
+    }
+  }
+  return false; // No header found before the current index
+};
+  // Check if the last page had a Frozen header and adjust the index accordingly
+  if (index > 0 && hasHeaderBeforeIndex(index)) {
+    console.log('last page frozen')
+    index += 1; // Adjust for the Frozen header
+  }
 
-  // Paginate the products list
-  const paginatedProducts = products.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
-  );
+  // Keep track of whether the frozen header has been added yet
+  let headerAdded = false;
+
+  while (itemCount < ITEMS_PER_PAGE && index < combinedData.length) {
+    const item = combinedData[index];
+
+    if (item.type !== 'header') {
+      paginatedProducts.push(item);
+      itemCount++;
+    } else if (!headerAdded) {
+      // Add the header only once, but don't count it as an item
+      paginatedProducts.push(item);
+      headerAdded = true;
+    }
+    index++;
+  }
 
   const handleNextPage = () => {
     if (currentPage < totalPages) {
@@ -104,8 +150,12 @@ const ManageProductsSuperScreen = ({ navigation }) => {
     }
   };
 
-  // Render a single product
+  // Render a single product or the frozen header
   const renderProductItem = (item) => {
+    if (item.type === 'header') {
+      return <Text style={styles.header} key="frozen-header">{item.title}</Text>; // Render Frozen Products header
+    }
+
     const formatUnit = (value, unit) => {
       if (value > 1) {
         // Pluralize units if value is more than 1
@@ -115,7 +165,6 @@ const ManageProductsSuperScreen = ({ navigation }) => {
       }
       return unit; // Return singular unit otherwise
     };
-
     return (
       <Card style={styles.card} key={item.id}>
         <Card.Content>
@@ -208,6 +257,14 @@ const styles = StyleSheet.create({
     fontSize: scale(14),
     fontFamily: 'Ubuntu_700Bold',
   },
+  header: {
+    fontSize: scale(20),
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginVertical: verticalScale(5),
+    fontFamily: 'Ubuntu_700Bold',
+    color: '#03A9F4',
+  },
   paginationContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -219,6 +276,7 @@ const styles = StyleSheet.create({
     color: '#03A9F4',
     fontFamily: 'Ubuntu_700Bold',
   },
+
   paginationText: {
     fontSize: moderateScale(14),
     fontFamily: 'Ubuntu_400Regular',
@@ -227,3 +285,4 @@ const styles = StyleSheet.create({
     color: 'grey',
   },
 });
+
