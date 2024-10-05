@@ -75,7 +75,8 @@ const ManageProductsSuperScreen = ({ navigation }) => {
   const removeFromDatabase = async (id) => {
     const taskRef = ref(getDatabase(), `products/${id}`);
     await remove(taskRef)
-      .then(() => Alert.alert('Successfully Removed!'))
+      .then(() => {Alert.alert('Successfully Removed!')
+      })
       .catch((reason) => Alert.alert(reason));
   };
 
@@ -143,7 +144,10 @@ const hasHeaderBeforeIndex = (index) => {
       setCurrentPage(currentPage + 1);
     }
   };
-
+if(currentPage>totalPages)
+{
+  setCurrentPage(currentPage - 1)
+}
   const handlePreviousPage = () => {
     if (currentPage > 1) {
       setCurrentPage(currentPage - 1);
@@ -230,38 +234,39 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgb(250,250,250)',
   },
   addButton: {
-    marginBottom: verticalScale(16),
+    marginBottom: verticalScale(5),
     backgroundColor: '#03A9F4',
   },
   card: {
+    height:verticalScale(150),
     marginBottom: verticalScale(12),
     backgroundColor: 'white',
     borderRadius: moderateScale(10),
   },
   productName: {
-    fontSize: scale(18),
+    fontSize: scale(20),
     fontWeight: 'bold',
     fontFamily: 'Ubuntu_700Bold',
   },
   productInfo: {
-    fontSize: scale(14),
+    fontSize: scale(16),
     color: 'grey',
     fontFamily: 'Ubuntu_400Regular',
   },
   unitInfo: {
-    fontSize: scale(10),
+    fontSize: scale(12),
     color: 'grey',
     fontFamily: 'Ubuntu_400Regular',
   },
   productInfoValue: {
-    fontSize: scale(14),
+    fontSize: scale(16),
     fontFamily: 'Ubuntu_700Bold',
   },
   header: {
-    fontSize: scale(20),
+    fontSize: scale(22),
     fontWeight: 'bold',
     textAlign: 'center',
-    marginVertical: verticalScale(5),
+    marginVertical: verticalScale(2),
     fontFamily: 'Ubuntu_700Bold',
     color: '#03A9F4',
   },
@@ -269,16 +274,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: verticalScale(10),
+    paddingVertical: verticalScale(12),
   },
   paginationButton: {
-    fontSize: moderateScale(16),
+    fontSize: moderateScale(18),
     color: '#03A9F4',
     fontFamily: 'Ubuntu_700Bold',
   },
 
   paginationText: {
-    fontSize: moderateScale(14),
+    fontSize: moderateScale(16),
     fontFamily: 'Ubuntu_400Regular',
   },
   disabledButton: {
