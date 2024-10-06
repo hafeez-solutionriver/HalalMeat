@@ -26,7 +26,7 @@ if (getApps().length === 0) {
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const { role,setIsLoggedIn,isLoggedIn } = useContext(RoleContext);
+  const { role,setIsLoggedIn,setUserName,setUserEmail } = useContext(RoleContext);
   // Firebase Realtime Database reference
   const dbRef = ref(getDatabase(app));
   // /BackHandler.exitApp() will exit the app
@@ -56,13 +56,19 @@ const LoginScreen = ({ navigation }) => {
     
     if(role=='Worker')
     {
+      setUserEmail("worker@gmail.com")
+      setUserName("Worker Name");
       navigation.navigate('View Stock Worker');
     }
     else if(role=='Super User')
-    {
+    { 
+      setUserEmail("superuser@gmail.com")
+      setUserName("super user name");
       navigation.navigate('Manage Employees');
     }
     else{
+      setUserEmail("supervisor@gmail.com")
+      setUserName("supervisor name");
       navigation.navigate('View Stock');
 
     }

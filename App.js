@@ -1,8 +1,8 @@
 import React, { useContext, useEffect,useState,useCallback } from 'react';
-import { View,Image,StyleSheet,Text,StatusBar } from 'react-native';
+import { View,Image,StyleSheet,Text,StatusBar,Alert } from 'react-native';
 import { Provider as PaperProvider } from 'react-native-paper';
 import { createDrawerNavigator,DrawerContentScrollView,DrawerItemList } from '@react-navigation/drawer';
-import { NavigationContainer } from '@react-navigation/native';
+import { useNavigation,NavigationContainer } from '@react-navigation/native';
 import LoginScreen from './screens/LoginScreen'; // Your Login Screen
 import ViewStockWorkerScreen from './screens/ViewStockWorkerScreen';
 import { RoleProvider, RoleContext } from './context/RoleContext'; // Your Role Context
@@ -11,7 +11,6 @@ import { scale } from 'react-native-size-matters';
 import CoverPage from './screens/CoverScreen';
 import ManageProductsSuperScreen from './screens/ManageProductsSuperScreen';
 import ManageEmployeesSuperScreen from './screens/ManageEmployeesSuperScreen';
-import ViewStockSupervisorScreen from './screens/ViewStockSupervisorScreen';
 import GenerateReportSupervisorScreen from './screens/GenerateReportSupervisorScreen'
 import * as SplashScreen from 'expo-splash-screen';  // Import SplashScreen API
 import { useFonts, Ubuntu_400Regular,Ubuntu_700Bold } from '@expo-google-fonts/ubuntu';
@@ -22,7 +21,7 @@ const Drawer = createDrawerNavigator();
 
 
 function CustomDrawerContent(props) {
-  const { role } = useContext(RoleContext); // Get the current role
+  const { role,userEmail,userName } = useContext(RoleContext); // Get the current role
 
   let headerIcon;
   if (role === 'Worker') {
@@ -40,18 +39,17 @@ function CustomDrawerContent(props) {
           source={headerIcon} // Replace with your image
           style={styles.profileImage}
         />
-        <Text style={styles.profileTitle}>John Doe</Text>
-        <Text style={styles.profileSubtitle}>johndoe@example.com</Text>
+        <Text style={styles.profileTitle}>{userName}</Text>
+        <Text style={styles.profileSubtitle}>{userEmail}</Text>
       </View>
       <DrawerItemList {...props} />
     </DrawerContentScrollView>
   );
 }
-
 // Drawer items based on roles
 const RoleBasedDrawer = () => {
-  const { role,isLoggedIn } = useContext(RoleContext); // Get the current role
- 
+  const { role,isLoggedIn,setIsLoggedIn } = useContext(RoleContext); // Get the current role
+  const navigation = useNavigation();
   let initialRouteName = 'Cover'; // Default to Login if not logged in
   if (isLoggedIn) {
     if (role === 'Worker') {
@@ -64,7 +62,7 @@ const RoleBasedDrawer = () => {
   }
   return (
     <Drawer.Navigator initialRouteName={initialRouteName}  drawerContent={(props) => <CustomDrawerContent {...props} />}  screenOptions={{drawerLabelStyle:{right:scale(20)},headerStyle:{backgroundColor:'#03A9F1'},headerTintColor:'#fff'}}>
-   {!isLoggedIn && <Drawer.Screen name="Cover" component={CoverPage} options={{headerShown:false}}/>}
+   {!isLoggedIn && <Drawer.Screen  name="Cover" component={CoverPage} options={{headerShown:false}}/>}
       {/* Conditionally render screens based on the role */}
       {role === 'Worker' && <Drawer.Screen name="View Stock Worker" options={{drawerIcon: ({ color, size }) => (
               <Image
@@ -108,6 +106,42 @@ const RoleBasedDrawer = () => {
         component={AddProductScreen}
         options={{ headerShown: false, drawerItemStyle: { display: 'none' } }} // Hide this from the drawer
       />
+      {isLoggedIn && (
+  <Drawer.Screen
+    name="Logout"
+    options={{
+      drawerIcon: ({  size }) => (
+        <Image
+          source={require('./assets/logout.png')} // Replace with your logout icon
+          style={{ width: size, height: size }}
+        />
+      ),
+      title: 'Logout', // Tab title
+    }}
+    listeners={() => ({
+      drawerItemPress: (e) => {
+         // Get navigation using useNavigation hook
+         e.preventDefault()
+        Alert.alert('Log out', 'Are you sure you want to Log out?', [
+          {
+            text: 'Cancel',
+            onPress: () => null,
+            style: 'cancel',
+          },
+          {
+            text: 'YES',
+            onPress: () => {
+              setIsLoggedIn(false)
+              navigation.navigate('Cover')
+      
+            }, // Navigate to Cover screen
+          },
+        ]);
+      },
+    })}
+    component={View} // Just a placeholder since Logout action doesn't require a screen
+  />
+)}
     </Drawer.Navigator>
   );
 };
