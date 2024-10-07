@@ -1,9 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect,useContext } from 'react';
 import { View, StyleSheet} from 'react-native';
 import { Button, Card, Text } from 'react-native-paper';
 import RNPickerSelect from 'react-native-picker-select';
 import { generatePDF } from '../utils/pdfGenerator';
 import { getDatabase, ref, onValue } from 'firebase/database';
+import { RoleContext } from '../context/RoleContext';
+import LottieView from 'lottie-react-native';
+import { scale,verticalScale } from 'react-native-size-matters';
 // Fetch products from Firebase
 const fetchProducts = (setProducts) => {
   const dbRef = ref(getDatabase(), 'products');
@@ -23,10 +26,15 @@ const fetchProducts = (setProducts) => {
 };
 
 const GenerateReportSupervisorScreen = () => {
+  const [isLoading, setIsLoading] = useState(false)
   const [products, setProducts] = useState([]);
+  const {userName} = useContext(RoleContext)
   const [filter, setFilter] = useState({
-    stockOrder: 'asc',
-    reorderLevel: 'asc',
+    productName:'none',
+    availableStockOrder: 'none',
+    reorderLevel: 'none',
+    reoderQuantity:'none'
+
   });
 
   useEffect(() => {
@@ -35,13 +43,15 @@ const GenerateReportSupervisorScreen = () => {
 
   const clearFilters = () => {
     setFilter({
-      stockOrder: 'asc',
-      reorderLevel: 'asc',
+    productName:'None',
+    availableStockOrder: 'None',
+    reorderLevel: 'None',
+    reoderQuantity:'None'
     });
   };
 
   const handleGenerateReport = async () => {
-    generatePDF(filter, products);
+    generatePDF(filter, products,userName,setIsLoading);
   };
 
   return (
@@ -50,16 +60,30 @@ const GenerateReportSupervisorScreen = () => {
         <Card.Content>
           <Text style={styles.title}>Generate Stock Report</Text>
 
+
           <View style={styles.section}>
-            <Text style={styles.label}>Available Stock Order</Text>
+            <Text style={styles.label}>Product Name</Text>
             <RNPickerSelect
-              onValueChange={(value) => setFilter({ ...filter, stockOrder: value })}
-              items={[
+              onValueChange={(value) => setFilter({ ...filter, productName: value })}
+              items={[{label:"None",value:"none"},
                 { label: 'Ascending', value: 'asc' },
                 { label: 'Descending', value: 'desc' },
               ]}
               
-              value={filter.stockOrder}
+              value={filter.productName}
+              
+            />
+          </View>
+          <View style={styles.section}>
+            <Text style={styles.label}>Available Stock Order</Text>
+            <RNPickerSelect
+              onValueChange={(value) => setFilter({ ...filter, availableStockOrder: value })}
+              items={[{label:"None",value:"none"},
+                { label: 'Ascending', value: 'asc' },
+                { label: 'Descending', value: 'desc' },
+              ]}
+              
+              value={filter.availableStockOrder}
               
             />
           </View>
@@ -68,11 +92,25 @@ const GenerateReportSupervisorScreen = () => {
             <Text style={styles.label}>Reorder Level</Text>
             <RNPickerSelect
               onValueChange={(value) => setFilter({ ...filter, reorderLevel: value })}
-              items={[
+              items={[{label:"None",value:"none"},
                 { label: 'Ascending', value: 'asc' },
                 { label: 'Descending', value: 'desc' },
               ]}
               value={filter.reorderLevel}
+            />
+          </View>
+
+          <View style={styles.section}>
+            <Text style={styles.label}>Reorder Quantity</Text>
+            <RNPickerSelect
+              onValueChange={(value) => setFilter({ ...filter, reoderQuantity: value })}
+              items={[{label:"None",value:"none"},
+                { label: 'Ascending', value: 'asc' },
+                { label: 'Descending', value: 'desc' },
+              ]}
+              
+              value={filter.reoderQuantity}
+              
             />
           </View>
 
@@ -88,7 +126,7 @@ const GenerateReportSupervisorScreen = () => {
               Clear
             </Button>
 
-            <Button
+          { !isLoading && <Button
               mode="contained"
               onPress={handleGenerateReport}
               style={styles.generateButton}
@@ -96,7 +134,20 @@ const GenerateReportSupervisorScreen = () => {
               labelStyle={styles.generateButtonText}
             >
               Generate
-            </Button>
+            </Button>}
+            {isLoading && <LottieView
+        autoPlay
+        
+        style={{
+          width:scale(70) ,
+          height: verticalScale(50),
+          backgroundColor: '#ffff',
+          borderRadius: 30,
+          paddingVertical: 8,
+        }}
+        // Find more Lottie files at https://lottiefiles.com/featured
+        source={require('../assets/Animation - 1728306291658.json')}
+      />}
           </View>
         </Card.Content>
       </Card>
@@ -153,7 +204,6 @@ const styles = StyleSheet.create({
   },
   generateButton: {
     backgroundColor: '#6200ee',
-    
     borderRadius: 30,
     paddingVertical: 8,
   },
