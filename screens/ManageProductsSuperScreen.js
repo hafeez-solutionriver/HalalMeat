@@ -54,7 +54,7 @@ const ManageProductsSuperScreen = ({ navigation }) => {
     }
 
     // Calculate reorder quantity
-    const reorderQuantity = reorderLevel - parseInt(currentItem.availableStock);
+    let reorderQuantity = reorderLevel - Number(currentItem.availableStock);
     if(reorderQuantity<0)
       {
         reorderQuantity=0;

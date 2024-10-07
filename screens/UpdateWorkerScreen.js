@@ -4,6 +4,7 @@ import { TextInput, Button } from 'react-native-paper';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { scale, verticalScale, moderateScale } from 'react-native-size-matters';
 import { getDatabase, ref, update, push, get, query, orderByChild, equalTo } from 'firebase/database'; // Firebase functions
+import StaticMethods from '../utils/OfflineStorage';
 
 const UpdateWorkerScreen = () => {
   const navigation = useNavigation();
@@ -20,7 +21,7 @@ const UpdateWorkerScreen = () => {
     if (isEdit && item) {
       // Populate fields when editing an existing worker
       setWorkerName(item.name);
-      setWorkerEmail(item.email);
+      setWorkerEmail(item.email.toLowerCase());
       setWorkerPassword(item.password);
     } else {
       // Clear fields when adding a new worker
@@ -38,11 +39,16 @@ const UpdateWorkerScreen = () => {
       Alert.alert('Error', 'All fields are required.');
       return;
     }
+    else if(!StaticMethods.isValidEmail(workerEmail.toLowerCase()))
+    {
+      Alert.alert('Error', 'Invalid email address format!.');
+      return;
+    }
 
     if (isEdit) {
       // Check if email exists (excluding the current worker being edited)
       try {
-        const emailQuery = query(workersRef, orderByChild('email'), equalTo(workerEmail));
+        const emailQuery = query(workersRef, orderByChild('email'), equalTo(workerEmail.toLowerCase()));
         const snapshot = await get(emailQuery);
 
         // Filter out the current worker's data from the snapshot
@@ -56,7 +62,7 @@ const UpdateWorkerScreen = () => {
           const workerRef = ref(db, `Worker/${item.id}`);
           await update(workerRef, {
             name: workerName,
-            email: workerEmail,
+            email: workerEmail.toLowerCase(),
             password: workerPassword,
           }).then(() => {
             Alert.alert('Success', 'Employee updated successfully!', [{ text: 'OK', onPress: () => navigation.goBack() }]);
@@ -81,7 +87,7 @@ const UpdateWorkerScreen = () => {
           const newWorkerRef = push(workersRef); // Generate a new unique ID
           await update(newWorkerRef, {
             name: workerName,
-            email: workerEmail,
+            email: workerEmail.toLowerCase(),
             password: workerPassword,
           }).then(() => {
             Alert.alert('Success', 'New Employee added successfully!', [{ text: 'OK', onPress: () => navigation.goBack() }]);

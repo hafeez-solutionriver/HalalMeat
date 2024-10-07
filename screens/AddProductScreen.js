@@ -11,7 +11,7 @@ const AddProductScreen = ({ navigation }) => {
   const [reorderLevel, setReorderLevel] = useState('');
   const [frozen, setFrozen] = useState('yes'); // Radio button value for frozen
   const [unit, setUnit] = useState('Piece'); // Dropdown state for unit
- 
+  
 
   // Function to handle submitting the new product
   const handleSubmit = async () => {
@@ -25,7 +25,7 @@ const AddProductScreen = ({ navigation }) => {
     }
 
     
-    const reorderLevelNumber = parseInt(reorderLevel);
+    const reorderLevelNumber = Number(reorderLevel);
 
     if (isNaN(availableStock) || isNaN(reorderLevelNumber)) {
       Alert.alert('Error', 'Stock and Reorder Level must be valid numbers.');

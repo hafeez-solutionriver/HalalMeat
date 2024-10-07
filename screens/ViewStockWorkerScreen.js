@@ -51,7 +51,7 @@ const ViewStockWorkerScreen = ({ navigation }) => {
 
   const handleUpdateModal = async (availableStock) => {
     const db = getDatabase();
-    availableStock = parseInt(availableStock);
+    availableStock = Number(availableStock);
 
     if (isNaN(availableStock)) {
       Alert.alert('Error', 'Available Stock must be valid numbers.');
@@ -59,7 +59,7 @@ const ViewStockWorkerScreen = ({ navigation }) => {
     }
 
     // Calculate reorder quantity
-    const reorderQuantity = currentItem.reorderLevel - availableStock;
+    let reorderQuantity = currentItem.reorderLevel - availableStock;
     if(reorderQuantity<0)
       {
         reorderQuantity=0;
