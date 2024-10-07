@@ -35,6 +35,7 @@ const fetchProducts = (setProducts, setTotalPages) => {
 };
 
 const ViewStockWorkerScreen = ({ navigation }) => {
+  
   const [products, setProducts] = useState([]);
   const [currentPage, setCurrentPage] = useState(1); // Track the current page
   const [totalPages, setTotalPages] = useState(1); // Keep track of the total pages
@@ -59,6 +60,10 @@ const ViewStockWorkerScreen = ({ navigation }) => {
 
     // Calculate reorder quantity
     const reorderQuantity = currentItem.reorderLevel - availableStock;
+    if(reorderQuantity<0)
+      {
+        reorderQuantity=0;
+      }
     currentItem = { ...currentItem, availableStock: availableStock, reorderQuantity: reorderQuantity };
 
     const productRef = ref(db, `products/${currentItem.id}`);

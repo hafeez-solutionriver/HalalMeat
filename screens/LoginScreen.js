@@ -1,12 +1,11 @@
-import React, { useState,useContext,useEffect } from 'react';
-import { View, StyleSheet, Image, Alert,BackHandler } from 'react-native';
-import { TextInput, Button, Menu } from 'react-native-paper';
+import React, { useState, useContext } from 'react';
+import { View, StyleSheet, Image, Alert } from 'react-native';
+import { TextInput, Button } from 'react-native-paper';
 import { scale, verticalScale, moderateScale } from 'react-native-size-matters';
+import { RoleContext } from '../context/RoleContext';
 import { getDatabase, ref, child, get } from 'firebase/database';  // Firebase Realtime Database
 import { initializeApp, getApps } from 'firebase/app';
-import { RoleContext } from '../context/RoleContext';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { InsertItem } from '../utils/OfflineStorage';
+import StaticMethods from '../utils/OfflineStorage';
 const firebaseConfig = {
   apiKey: "AIzaSyD2a7gjEbl5aw0RjA-i4uTFNDgWsIm71x8",
   authDomain: "halal-meat-19aff.firebaseapp.com",  // Typically derived from project_id
@@ -26,124 +25,52 @@ if (getApps().length === 0) {
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const { role,setIsLoggedIn,setUserName,setUserEmail } = useContext(RoleContext);
-  // Firebase Realtime Database reference
-  const dbRef = ref(getDatabase(app));
-  // /BackHandler.exitApp() will exit the app
-  useEffect(() => {
-    const backAction = () => {
-      Alert.alert('Hold on!', 'Are you sure you want to go back?', [
-        {
-          text: 'Cancel',
-          onPress: () => null,
-          style: 'cancel',
-        },
-        {text: 'YES', onPress: () =>navigation.goBack()},
-      ]);
-      return true;
+  const { role, setIsLoggedIn, setUserName, setUserEmail } = useContext(RoleContext);
+
+  const redirect = async (userName,userEmail,route)=>{
+    const data = {
+      isLoggedIn: true,
+      userEmail:userEmail,
+      role: role,
+      userName: userName
     };
-
-    const backHandler = BackHandler.addEventListener(
-      'hardwareBackPress',
-      backAction,
-    );
-
-    return () => backHandler.remove();
-  }, []);
- 
-  const handleLogin = async () => {
-    setIsLoggedIn(prev=>!prev);
     
-    if(role=='Worker')
-    {
-      setUserEmail("worker@gmail.com")
-      setUserName("Worker Name");
-      navigation.navigate('View Stock Worker');
+    // Store the entire object at once
+    await StaticMethods.storeData(data).then(()=>navigation.navigate(route));
+  }
+  const handleLogin = () => {
+    setIsLoggedIn(true);
+
+    if (role === 'Worker') {
+      setUserEmail('worker@gmail.com');
+      setUserName('Worker Name');
+      redirect('worker@gmail.com','Worker Name','View Stock Worker')
+      
+    } else if (role === 'Super User') {
+      setUserEmail('superuser@gmail.com');
+      setUserName('Super User Name');
+      redirect('superuser@gmail.com','Super User Name','Manage Employees');
+    } else if (role === 'Supervisor') {
+      setUserEmail('supervisor@gmail.com');
+      setUserName('Supervisor Name');
+      redirect('supervisor@gmail.com','Supervisor Name','View Stock');
     }
-    else if(role=='Super User')
-    { 
-      setUserEmail("superuser@gmail.com")
-      setUserName("super user name");
-      navigation.navigate('Manage Employees');
-    }
-    else{
-      setUserEmail("supervisor@gmail.com")
-      setUserName("supervisor name");
-      navigation.navigate('View Stock');
-
-    }
-  //   if(email!='' && password!='')
-  //   {
-
-  //   try {
-  //     // Fetch users from Firebase Realtime Database
-  //     const snapshot = await get(child(dbRef, role));
-  //     if (snapshot.exists()) {
-  //       const users = snapshot.val();
-  //       let userFound = false;
-
-  //       // Iterate through the users to validate email and password
-  //       for (let userId in users) {
-  //         const user = users[userId];
-  //         if (user.email === email && user.password === password) {
-           
-  //           userFound = true;
-  //     // Navigate based on role
-  //     setIsLoggedIn(prev=>!prev);
-    
-  //     if(role=='Worker')
-  //     {
-  //       navigation.navigate('View Stock Worker');
-  //     }
-  //     else if(role=='Super User')
-  //     {
-  //       navigation.navigate('Manage Employees');
-  //     }
-  //     else{
-  //       navigation.navigate('View Stock');
-
-  //     }
-  //           break;
-  //         }
-  //       }
-
-  //       if (!userFound) {
-  //         Alert.alert('Login Failed', 'Invalid email or password.');
-  //       }
-  //     } else {
-  //       Alert.alert('Error', 'No users found in the database.');
-  //     }
-  //   } catch (error) {
-  //     console.error(error);
-  //     Alert.alert('Error', 'Something went wrong while fetching user data.');
-  //   }
-  // }
-  // else
-  // {
-  //   Alert.alert('Error', 'Kindly fill the fields');
-  // }
   };
 
   return (
     <View style={styles.container}>
-      {/* App Icon */}
       <Image
         source={require('../assets/ic_login.png')}
         style={styles.loginIcon}
       />
-
-      {/* Email Field */}
       <TextInput
         label="Email Address"
         value={email}
         onChangeText={text => setEmail(text)}
         mode="outlined"
         style={styles.input}
-        theme={{ colors: { primary: '#03A9F4', text: '#000' } }} // Customize border color and text color
-
+        theme={{ colors: { primary: '#03A9F4', text: '#000' } }}
       />
-
-      {/* Password Field */}
       <TextInput
         label="Password"
         value={password}
@@ -151,9 +78,8 @@ const LoginScreen = ({ navigation }) => {
         secureTextEntry
         mode="outlined"
         style={styles.input}
-        theme={{ colors: { primary: '#03A9F4', text: '#000' } }} // Customize border color and text color
+        theme={{ colors: { primary: '#03A9F4', text: '#000' } }}
       />
-      {/* Login Button */}
       <Button
         mode="contained"
         onPress={handleLogin}
@@ -172,7 +98,7 @@ const styles = StyleSheet.create({
     padding: moderateScale(16),
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor:'rgb(250,250,250)'
+    backgroundColor: 'rgb(250,250,250)',
   },
   loginIcon: {
     width: scale(150),
@@ -184,7 +110,6 @@ const styles = StyleSheet.create({
     marginBottom: verticalScale(16),
     backgroundColor: 'white',
   },
-  
   loginButton: {
     width: '100%',
     height: verticalScale(50),

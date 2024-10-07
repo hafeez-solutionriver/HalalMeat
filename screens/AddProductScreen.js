@@ -35,6 +35,10 @@ const AddProductScreen = ({ navigation }) => {
     // Calculate reorder quantity
     const reorderQuantity = reorderLevelNumber-availableStock;
 
+    if(reorderQuantity<0)
+    {
+      reorderQuantity=0;
+    }
     // Add new product logic
      // Generate a new unique ID
     await push(productsRef, {

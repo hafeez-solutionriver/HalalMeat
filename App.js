@@ -1,8 +1,8 @@
-import React, { useContext, useEffect,useState,useCallback } from 'react';
-import { View,Image,StyleSheet,Text,StatusBar,Alert } from 'react-native';
+import React, { useContext, useEffect, useState, useCallback } from 'react';
+import { View, Image, StyleSheet, Text, StatusBar, Alert } from 'react-native';
 import { Provider as PaperProvider } from 'react-native-paper';
-import { createDrawerNavigator,DrawerContentScrollView,DrawerItemList } from '@react-navigation/drawer';
-import { useNavigation,NavigationContainer } from '@react-navigation/native';
+import { createDrawerNavigator, DrawerContentScrollView, DrawerItemList } from '@react-navigation/drawer';
+import { useNavigation, NavigationContainer } from '@react-navigation/native';
 import LoginScreen from './screens/LoginScreen'; // Your Login Screen
 import ViewStockWorkerScreen from './screens/ViewStockWorkerScreen';
 import { RoleProvider, RoleContext } from './context/RoleContext'; // Your Role Context
@@ -11,34 +11,31 @@ import { scale } from 'react-native-size-matters';
 import CoverPage from './screens/CoverScreen';
 import ManageProductsSuperScreen from './screens/ManageProductsSuperScreen';
 import ManageEmployeesSuperScreen from './screens/ManageEmployeesSuperScreen';
-import GenerateReportSupervisorScreen from './screens/GenerateReportSupervisorScreen'
-import * as SplashScreen from 'expo-splash-screen';  // Import SplashScreen API
-import { useFonts, Ubuntu_400Regular,Ubuntu_700Bold } from '@expo-google-fonts/ubuntu';
+import GenerateReportSupervisorScreen from './screens/GenerateReportSupervisorScreen';
+import * as SplashScreen from 'expo-splash-screen'; // Import SplashScreen API
+import { useFonts, Ubuntu_400Regular, Ubuntu_700Bold } from '@expo-google-fonts/ubuntu';
 import AddProductScreen from './screens/AddProductScreen';
+import StaticMethods from './utils/OfflineStorage';
 SplashScreen.preventAutoHideAsync(); // Prevents the splash screen from auto-hiding
 
 const Drawer = createDrawerNavigator();
 
-
 function CustomDrawerContent(props) {
-  const { role,userEmail,userName } = useContext(RoleContext); // Get the current role
+  const { role, userEmail, userName } = useContext(RoleContext); // Get the current role
 
   let headerIcon;
   if (role === 'Worker') {
-   headerIcon=require('./assets/worker.png')
+    headerIcon = require('./assets/worker.png');
   } else if (role === 'Super User') {
-   headerIcon=require('./assets/superuser.png')
+    headerIcon = require('./assets/superuser.png');
   } else if (role === 'Supervisor') {
-    headerIcon=require('./assets/supervisor.png')
+    headerIcon = require('./assets/supervisor.png');
   }
+
   return (
     <DrawerContentScrollView {...props}>
-     
       <View style={styles.drawerHeader}>
-        <Image 
-          source={headerIcon} // Replace with your image
-          style={styles.profileImage}
-        />
+        <Image source={headerIcon} style={styles.profileImage} />
         <Text style={styles.profileTitle}>{userName}</Text>
         <Text style={styles.profileSubtitle}>{userEmail}</Text>
       </View>
@@ -46,105 +43,158 @@ function CustomDrawerContent(props) {
     </DrawerContentScrollView>
   );
 }
+
 // Drawer items based on roles
 const RoleBasedDrawer = () => {
-  const { role,isLoggedIn,setIsLoggedIn } = useContext(RoleContext); // Get the current role
-  const navigation = useNavigation();
-  let initialRouteName = 'Cover'; // Default to Login if not logged in
-  if (isLoggedIn) {
-    if (role === 'Worker') {
-      initialRouteName = 'View Stock Worker';
-    } else if (role === 'Super User') {
-      initialRouteName = 'Manage Employees';
-    } else if (role === 'Supervisor') {
-      initialRouteName = 'View Stock';
-    }
-  }
-  return (
-    <Drawer.Navigator initialRouteName={initialRouteName}  drawerContent={(props) => <CustomDrawerContent {...props} />}  screenOptions={{drawerLabelStyle:{right:scale(20)},headerStyle:{backgroundColor:'#03A9F1'},headerTintColor:'#fff'}}>
-   {!isLoggedIn && <Drawer.Screen  name="Cover" component={CoverPage} options={{headerShown:false}}/>}
-      {/* Conditionally render screens based on the role */}
-      {role === 'Worker' && <Drawer.Screen name="View Stock Worker" options={{drawerIcon: ({ color, size }) => (
-              <Image
-              source={require('./assets/viewstock.png')}
-              style={{ width: size, height: size }}
-            />)}} component={ViewStockWorkerScreen} />}
-      
-      {role === 'Super User' && <Drawer.Screen name="Manage Employees" options={{drawerIcon: ({ color, size }) => (
-              <Image
-              source={require('./assets/manageemployees.png')}
-              style={{ width: size, height: size }}
-            />)}} component={ManageEmployeesSuperScreen} />}
-      {role === 'Super User' && <Drawer.Screen name="Manage Product" options={{drawerIcon: ({ color, size }) => (
-              <Image
-              source={require('./assets/manageproduct.png')}
-              style={{ width: size, height: size }}
-            />)}}
-            component={ManageProductsSuperScreen} />}
-      {role === 'Supervisor' && <Drawer.Screen name="View Stock" initialParams={{ isSupervisor: true }} options={{drawerIcon: ({ color, size }) => (
-              <Image
-              source={require('./assets/viewstock.png')}
-              style={{ width: size, height: size }}
-            />)}}
-             component={ViewStockWorkerScreen} />}
-      {role === 'Supervisor' && <Drawer.Screen name="Generate Report" options={{drawerIcon: ({ color, size }) => (
-              <Image
-              source={require('./assets/generatereport.png')}
-              style={{ width: size, height: size }}
-            />)}}
-            component={GenerateReportSupervisorScreen} />}
+  const { role, isLoggedIn,setIsLoggedIn } = useContext(RoleContext); // Get the current role
+  const [initialRouteName, setInitialRouteName] = useState(''); // Add a loading state
 
-    {(!isLoggedIn) && <Drawer.Screen name="Login" component={LoginScreen} options={{headerShown:false}} />}
-    <Drawer.Screen
-        
+  useEffect(() => {
+
+    setInitialRouteName(
+      !isLoggedIn
+        ? 'Cover'
+        : role.trim() === 'Worker'
+        ? 'View Stock Worker'
+        : role.trim() === 'Super User'
+        ? 'Manage Employees'
+        : role.trim() === 'Supervisor'
+        ? 'View Stock'
+        : 'Cover'
+    );
+  }, [isLoggedIn, role]);
+
+ 
+
+  const navigation = useNavigation();
+
+ 
+
+  return (
+    <Drawer.Navigator
+      initialRouteName={initialRouteName}
+      drawerContent={(props) => <CustomDrawerContent {...props} />}
+      screenOptions={{
+        drawerLabelStyle: { right: scale(20) },
+        headerStyle: { backgroundColor: '#03A9F1' },
+        headerTintColor: '#fff',
+      }}
+    >
+      {!isLoggedIn && <Drawer.Screen name="Cover" component={CoverPage} options={{ headerShown: false }} />}
+      
+      {role === 'Worker' && (
+        <Drawer.Screen
+          name="View Stock Worker"
+          options={{
+            title: 'View Stock',
+            drawerIcon: ({ color, size }) => (
+              <Image source={require('./assets/viewstock.png')} style={{ width: size, height: size }} />
+            ),
+          }}
+          component={ViewStockWorkerScreen}
+        />
+      )}
+      
+      {role === 'Super User' && (
+        <Drawer.Screen
+          name="Manage Employees"
+          options={{
+            drawerIcon: ({ color, size }) => (
+              <Image source={require('./assets/manageemployees.png')} style={{ width: size, height: size }} />
+            ),
+          }}
+          component={ManageEmployeesSuperScreen}
+        />
+      )}
+      
+      {role === 'Super User' && (
+        <Drawer.Screen
+          name="Manage Product"
+          options={{
+            drawerIcon: ({ color, size }) => (
+              <Image source={require('./assets/manageproduct.png')} style={{ width: size, height: size }} />
+            ),
+          }}
+          component={ManageProductsSuperScreen}
+        />
+      )}
+      
+      {role === 'Supervisor' && (
+        <Drawer.Screen
+          name="View Stock"
+          initialParams={{ isSupervisor: true }}
+          options={{
+            drawerIcon: ({ color, size }) => (
+              <Image source={require('./assets/viewstock.png')} style={{ width: size, height: size }} />
+            ),
+          }}
+          component={ViewStockWorkerScreen}
+        />
+      )}
+      
+      {role === 'Supervisor' && (
+        <Drawer.Screen
+          name="Generate Report"
+          options={{
+            drawerIcon: ({ color, size }) => (
+              <Image source={require('./assets/generatereport.png')} style={{ width: size, height: size }} />
+            ),
+          }}
+          component={GenerateReportSupervisorScreen}
+        />
+      )}
+      
+      {!isLoggedIn && <Drawer.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />}
+      
+      <Drawer.Screen
         name="UpdateEmployee"
         component={UpdateWorkerScreen}
-        options={{ headerShown: false, drawerItemStyle: { display: 'none' } }} // Hide this from the drawer
+        options={{
+          headerShown: false,
+          drawerItemStyle: { display: 'none' }, // Hide this from the drawer
+        }}
       />
+      
       <Drawer.Screen
         name="AddProduct"
         component={AddProductScreen}
-        options={{ headerShown: false, drawerItemStyle: { display: 'none' } }} // Hide this from the drawer
+        options={{
+          headerShown: false,
+          drawerItemStyle: { display: 'none' }, // Hide this from the drawer
+        }}
       />
+
       {isLoggedIn && (
-  <Drawer.Screen
-    name="Logout"
-    options={{
-      drawerIcon: ({  size }) => (
-        <Image
-          source={require('./assets/logout.png')} // Replace with your logout icon
-          style={{ width: size, height: size }}
-        />
-      ),
-      title: 'Logout', // Tab title
-    }}
-    listeners={() => ({
-      drawerItemPress: (e) => {
-         // Get navigation using useNavigation hook
-         e.preventDefault()
-        Alert.alert('Log out', 'Are you sure you want to Log out?', [
-          {
-            text: 'Cancel',
-            onPress: () => null,
-            style: 'cancel',
+        <Drawer.Screen name="Logout" options={{
+          drawerIcon: ({ size }) => (
+            <Image source={require('./assets/logout.png')} style={{ width: size, height: size }} />
+          ),
+          title: 'Logout',
+        }} listeners={() => ({
+          drawerItemPress: (e) => {
+            e.preventDefault();
+            Alert.alert('Log out', 'Are you sure you want to Log out?', [
+              {
+                text: 'Cancel',
+                onPress: () => null,
+                style: 'cancel',
+              },
+              {
+                text: 'YES',
+                onPress: () => {
+                  setIsLoggedIn(false);
+                  StaticMethods.clearData().then(()=>navigation.navigate('Cover'))
+                  ;
+                },
+              },
+            ]);
           },
-          {
-            text: 'YES',
-            onPress: () => {
-              setIsLoggedIn(false)
-              navigation.navigate('Cover')
-      
-            }, // Navigate to Cover screen
-          },
-        ]);
-      },
-    })}
-    component={View} // Just a placeholder since Logout action doesn't require a screen
-  />
-)}
+        })} component={View} />
+      )}
     </Drawer.Navigator>
   );
 };
+
 
 const styles = StyleSheet.create({
   drawerHeader: {

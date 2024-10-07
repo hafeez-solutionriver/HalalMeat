@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView } from 'react-native';
+import { View, StyleSheet} from 'react-native';
 import { Button, Card, Text } from 'react-native-paper';
 import RNPickerSelect from 'react-native-picker-select';
 import { generatePDF } from '../utils/pdfGenerator';
 import { getDatabase, ref, onValue } from 'firebase/database';
-import { moderateVerticalScale } from 'react-native-size-matters';
 // Fetch products from Firebase
 const fetchProducts = (setProducts) => {
   const dbRef = ref(getDatabase(), 'products');

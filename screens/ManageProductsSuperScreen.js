@@ -55,6 +55,10 @@ const ManageProductsSuperScreen = ({ navigation }) => {
 
     // Calculate reorder quantity
     const reorderQuantity = reorderLevel - parseInt(currentItem.availableStock);
+    if(reorderQuantity<0)
+      {
+        reorderQuantity=0;
+      }
     currentItem = { ...currentItem, reorderLevel: reorderLevel, reorderQuantity: reorderQuantity };
 
     const productRef = ref(db, `products/${currentItem.id}`);

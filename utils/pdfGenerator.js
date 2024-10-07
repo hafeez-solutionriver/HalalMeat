@@ -1,10 +1,11 @@
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import * as FileSystem from 'expo-file-system';
-
+import { RoleContext } from '../context/RoleContext';
 export const generatePDF = async (filter, data) => {
   console.log('filter', filter);
   console.log('data', data);
+  const { userName } = useContext(RoleContext); // Get the current role
 
   // Get current date and time to create a unique file name
   const currentDate = new Date();
@@ -16,8 +17,9 @@ export const generatePDF = async (filter, data) => {
   const formattedTime = `${currentDate.getHours().toString().padStart(2, '0')}-${currentDate.getMinutes()
     .toString()
     .padStart(2, '0')}-${currentDate.getSeconds().toString().padStart(2, '0')}`;
-  const fileName = `${formattedDate}-${formattedTime}-Report.pdf`;
+  const fileName = `${formattedDate}-${formattedTime}-${userName}-Report.pdf`;
 
+  
   const reportContent = `
     <style>
       table {
