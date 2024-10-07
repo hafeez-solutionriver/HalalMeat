@@ -81,11 +81,13 @@ const LoginScreen = ({ navigation }) => {
   
           if (!userFound) {
             Alert.alert('Login Failed', 'Invalid email or password.');
+            setIsLoading(false);
           }
         } 
       } catch (error) {
         console.error(error);
         Alert.alert('Error', 'Something went wrong while fetching user data.');
+        setIsLoading(false);
       }}
   };
 

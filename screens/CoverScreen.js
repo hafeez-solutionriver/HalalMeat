@@ -16,7 +16,7 @@ const CoverPage = ({ navigation }) => {
 
   const handleRoleSelect = async (selectedRole) => {
     setRole(selectedRole); // Set the selected role in the context
-    navigation.navigate('Login')
+    await StaticMethods.updateStoredData('role',selectedRole).then(()=>navigation.navigate('Login'))
      // Navigate to Login screen
   };
 
