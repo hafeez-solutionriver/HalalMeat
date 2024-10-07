@@ -3,9 +3,10 @@ import { View, StyleSheet, Image, Alert } from 'react-native';
 import { TextInput, Button } from 'react-native-paper';
 import { scale, verticalScale, moderateScale } from 'react-native-size-matters';
 import { RoleContext } from '../context/RoleContext';
-import { getDatabase, ref, child, get } from 'firebase/database';  // Firebase Realtime Database
+import {getDatabase, ref, child, get } from 'firebase/database';  // Firebase Realtime Database
 import { initializeApp, getApps } from 'firebase/app';
 import StaticMethods from '../utils/OfflineStorage';
+import LottieView from 'lottie-react-native';
 const firebaseConfig = {
   apiKey: "AIzaSyD2a7gjEbl5aw0RjA-i4uTFNDgWsIm71x8",
   authDomain: "halal-meat-19aff.firebaseapp.com",  // Typically derived from project_id
@@ -25,6 +26,8 @@ if (getApps().length === 0) {
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false)
+
   const { role, setIsLoggedIn, setUserName, setUserEmail } = useContext(RoleContext);
 
   const redirect = async (userName,userEmail,route)=>{
@@ -38,23 +41,52 @@ const LoginScreen = ({ navigation }) => {
     // Store the entire object at once
     await StaticMethods.storeData(data).then(()=>navigation.navigate(route));
   }
-  const handleLogin = () => {
-    setIsLoggedIn(true);
-
+  const handleLogin = async() => {
+    
+    const dbRef = ref(getDatabase(), role);
+    if(email!='' && password!='')
+      {
+        setIsLoading(true);
+      try {
+        // Fetch users from Firebase Realtime Database
+        
+        const snapshot = await get(child(dbRef,'/'));
+        if (snapshot.exists()) {
+          const users = snapshot.val();
+          let userFound = false;
+          // Iterate through the users to validate email and password
+          for (let userId in users) {
+            const user = users[userId];
+            if (user.email === email.toLowerCase() && user.password === password ) {
+              userFound = true;
+              setIsLoading(false);
+              setIsLoggedIn(true);
     if (role === 'Worker') {
-      setUserEmail('worker@gmail.com');
-      setUserName('Worker Name');
-      redirect('worker@gmail.com','Worker Name','View Stock Worker')
+      setUserEmail(user.email);
+      setUserName(user.name);
+      redirect(user.email,user.name,'View Stock Worker')
       
     } else if (role === 'Super User') {
-      setUserEmail('superuser@gmail.com');
-      setUserName('Super User Name');
-      redirect('superuser@gmail.com','Super User Name','Manage Employees');
+      setUserEmail(user.email);
+      setUserName(user.name);
+      redirect(user.email,user.name,'Manage Employees');
     } else if (role === 'Supervisor') {
-      setUserEmail('supervisor@gmail.com');
-      setUserName('Supervisor Name');
-      redirect('supervisor@gmail.com','Supervisor Name','View Stock');
+      setUserEmail(user.email);
+      setUserName(user.name);
+      redirect(user.email,user.name,'View Stock');
     }
+            
+            }
+          }
+  
+          if (!userFound) {
+            Alert.alert('Login Failed', 'Invalid email or password.');
+          }
+        } 
+      } catch (error) {
+        console.error(error);
+        Alert.alert('Error', 'Something went wrong while fetching user data.');
+      }}
   };
 
   return (
@@ -80,14 +112,27 @@ const LoginScreen = ({ navigation }) => {
         style={styles.input}
         theme={{ colors: { primary: '#03A9F4', text: '#000' } }}
       />
-      <Button
+     {!isLoading && <Button
         mode="contained"
         onPress={handleLogin}
         style={styles.loginButton}
         labelStyle={styles.loginButtonText}
       >
         Login
-      </Button>
+      </Button>}
+      {isLoading && <LottieView
+        autoPlay
+        style={{
+          width:scale(90) ,
+          height: verticalScale(90),
+          backgroundColor: 'rgb(250,250,250)',
+          borderRadius: 30,
+          paddingVertical: 8,
+        }}
+        source={require('../assets/Animation - 1728306291658.json')}
+
+        />}
+
     </View>
   );
 };
