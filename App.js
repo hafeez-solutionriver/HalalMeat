@@ -16,6 +16,7 @@ import * as SplashScreen from 'expo-splash-screen'; // Import SplashScreen API
 import { useFonts, Ubuntu_400Regular, Ubuntu_700Bold } from '@expo-google-fonts/ubuntu';
 import AddProductScreen from './screens/AddProductScreen';
 import StaticMethods from './utils/OfflineStorage';
+import ViewStockSupervisorScreen from './screens/ViewStockSupervisorScreen';
 SplashScreen.preventAutoHideAsync(); // Prevents the splash screen from auto-hiding
 
 const Drawer = createDrawerNavigator();
@@ -122,13 +123,13 @@ const RoleBasedDrawer = () => {
       {role === 'Supervisor' && (
         <Drawer.Screen
           name="View Stock"
-          initialParams={{ isSupervisor: true }}
+          
           options={{
             drawerIcon: ({ color, size }) => (
               <Image source={require('./assets/viewstock.png')} style={{ width: size, height: size }} />
             ),
           }}
-          component={ViewStockWorkerScreen}
+          component={ViewStockSupervisorScreen}
         />
       )}
       

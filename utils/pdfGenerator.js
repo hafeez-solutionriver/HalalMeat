@@ -4,9 +4,8 @@ import * as FileSystem from 'expo-file-system';
 
 
 export const generatePDF = async (filter, data,userName='Dummy',setIsLoading) => {
-  console.log('data', data);
-  console.log('filter', filter);
-setIsLoading(true);
+  
+  setIsLoading(true);
   // Separate frozen and non-frozen products
   const nonFrozenProducts = data.filter((item) => !item.frozen);
   const frozenProducts = data.filter((item) => item.frozen);

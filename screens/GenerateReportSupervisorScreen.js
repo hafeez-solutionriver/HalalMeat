@@ -51,7 +51,7 @@ const GenerateReportSupervisorScreen = () => {
   };
 
   const handleGenerateReport = async () => {
-    generatePDF(filter, products,userName,setIsLoading);
+    generatePDF(filter, products,userName,setIsLoading).then(()=>{clearFilters()});
   };
 
   return (

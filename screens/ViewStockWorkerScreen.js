@@ -34,7 +34,7 @@ const fetchProducts = (setProducts, setTotalPages) => {
   });
 };
 
-const ViewStockWorkerScreen = ({ navigation }) => {
+const ViewStockWorkerScreen = () => {
   
   const [products, setProducts] = useState([]);
   const [currentPage, setCurrentPage] = useState(1); // Track the current page
