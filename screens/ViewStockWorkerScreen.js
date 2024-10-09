@@ -1,14 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, Alert, TouchableOpacity } from 'react-native';
-import { Card, Button } from 'react-native-paper';
-import { moderateScale, scale, verticalScale } from 'react-native-size-matters';
-import { getDatabase, ref, update, onValue } from 'firebase/database'; // Firebase Realtime Database import
+import { View, Text, ScrollView,Alert, StyleSheet, TouchableOpacity } from 'react-native';
+import { getDatabase, ref, update, onValue } from 'firebase/database';
 import CustomModal from '../components/CustomModel';
-import {  useRoute } from '@react-navigation/native';
+import { scale, verticalScale } from 'react-native-size-matters';
 
 let currentItem;
 
-const ITEMS_PER_PAGE = 3; // Display 3 items per page
+const ITEMS_PER_PAGE = 11; // Display 12 items per page
 
 // Fetch and listen to product changes
 const fetchProducts = (setProducts, setTotalPages) => {
@@ -35,15 +33,11 @@ const fetchProducts = (setProducts, setTotalPages) => {
 };
 
 const ViewStockWorkerScreen = () => {
-  
   const [products, setProducts] = useState([]);
   const [currentPage, setCurrentPage] = useState(1); // Track the current page
   const [totalPages, setTotalPages] = useState(1); // Keep track of the total pages
   const [isModalVisible, setModalVisible] = useState(false);
   const [value, setValue] = useState('');
-  const route = useRoute();
-  const isSupervisor  = route.params || false
-  
 
   useEffect(() => {
     fetchProducts(setProducts, setTotalPages);
@@ -60,10 +54,9 @@ const ViewStockWorkerScreen = () => {
 
     // Calculate reorder quantity
     let reorderQuantity = currentItem.reorderLevel - availableStock;
-    if(reorderQuantity<0)
-      {
-        reorderQuantity=0;
-      }
+    if (reorderQuantity < 0) {
+      reorderQuantity = 0;
+    }
     currentItem = { ...currentItem, availableStock: availableStock, reorderQuantity: reorderQuantity };
 
     const productRef = ref(db, `products/${currentItem.id}`);
@@ -138,54 +131,45 @@ const ViewStockWorkerScreen = () => {
     }
   };
 
-  const renderProductItem = (item) => {
-    const formatUnit = (value, unit) => {
-      if (value > 1) {
-        if (unit === 'Box') return 'Boxes';
-        if (unit === 'Piece') return 'Pieces';
-        if (unit === 'Kg') return 'Kgs';
-      }
-      return unit;
-    };
+  // Render the table headers
+  const renderTableHeader = () => (
+    <View style={styles.headerRow}>
+      <Text style={styles.headerCell}>Product{"\n"}Name</Text>
+      <Text style={styles.headerCell}>Available{"\n"}Stock</Text>
+      <Text style={styles.headerCell}>Reorder{"\n"}Level</Text>
+      <Text style={styles.headerCell}>Reorder{"\n"}Quantity</Text>
+    </View>
+  );
 
+  // Render the table rows
+  const renderTableRows = () => paginatedProducts.map((item, index) => {
+    const rowStyle = index % 2 === 0 ? styles.greyRow : styles.whiteRow;
     if (item.type === 'header') {
-      return <Text style={styles.header} key="frozen-header">{item.title}</Text>;
+      return (
+        <View key={index} style={[styles.row, styles.frozenHeader]}>
+          <Text style={styles.cellFrozen}>{item.title}</Text>
+        </View>
+      );
     }
-
     return (
-      <Card style={styles.card} key={item.id}>
-        <Card.Content>
-          <Text style={styles.productName}>{item.name}</Text>
-          <Text style={styles.productInfo}>
-            Available Stock: <Text style={styles.productInfoValue}>{item.availableStock}<Text style={styles.unitInfo}>{formatUnit(item.availableStock, item.unit)}</Text></Text>
-          </Text>
-          <Text style={styles.productInfo}>
-            Reorder Level: <Text style={styles.productInfoValue}>{item.reorderLevel}<Text style={styles.unitInfo}>{formatUnit(item.reorderLevel, item.unit)}</Text></Text>
-          </Text>
-          <Text style={styles.productInfo}>
-            Reorder Quantity: <Text style={styles.productInfoValue}>{item.reorderQuantity}<Text style={styles.unitInfo}>{formatUnit(item.reorderQuantity, item.unit)}</Text></Text>
-          </Text>
-        </Card.Content>
-        {isSupervisor===false &&
-        <Card.Actions>
-          <Button style={{ width: '100%' }} labelStyle={styles.buttonLabel} onPress={() => openModal(item)}>Update Available Stock</Button>
-        </Card.Actions>}
-        <CustomModal
-          label={"Available Stock"}
-          visible={isModalVisible}
-          title={`Update Available Stock from ${value} To`}
-          onUpdate={handleUpdateModal}
-          onClose={() => setModalVisible(false)}
-          initialValue={value}
-        />
-      </Card>
+      <TouchableOpacity key={index} style={[styles.row, rowStyle]} onPress={() => openModal(item)}>
+        <Text style={styles.cell}>{item.name}</Text>
+        <Text style={styles.cell}>{item.availableStock}</Text>
+        <Text style={styles.cell}>{item.reorderLevel}</Text>
+        <Text style={styles.cell}>{item.reorderQuantity}</Text>
+      </TouchableOpacity>
     );
-  };
+  });
 
   return (
     <View style={styles.container}>
       <ScrollView>
-        {paginatedProducts.map(renderProductItem)}
+        <View style={styles.table}>
+          {/* Table Header */}
+          {renderTableHeader()}
+          {/* Table Rows */}
+          {renderTableRows()}
+        </View>
       </ScrollView>
 
       {/* Pagination Controls */}
@@ -198,6 +182,16 @@ const ViewStockWorkerScreen = () => {
           <Text style={[styles.paginationButton, currentPage === totalPages && styles.disabledButton]}>Next</Text>
         </TouchableOpacity>
       </View>
+
+      {/* Update Modal */}
+      <CustomModal
+        label={"Available Stock"}
+        visible={isModalVisible}
+        title={`Update Available Stock from ${value} To`}
+        onUpdate={handleUpdateModal}
+        onClose={() => setModalVisible(false)}
+        initialValue={value}
+      />
     </View>
   );
 };
@@ -207,58 +201,78 @@ export default ViewStockWorkerScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: scale(16),
     backgroundColor: 'rgb(250,250,250)',
   },
-  card: {
-    height:verticalScale(150),
-    marginBottom: verticalScale(12),
-    backgroundColor: 'white',
-    borderRadius: moderateScale(10),
+  table: {
+    color: '#fff',
+    borderWidth: 1,
+    borderColor: '#c8e1ff',
+    width: scale(350),
   },
-  productName: {
-    fontSize: scale(20),
-    fontWeight: 'bold',
-    fontFamily: 'Ubuntu_700Bold',
+  headerRow: {
+    color: '#fff',
+    flexDirection: 'row',
+    backgroundColor: '#03A9F4', // Same color as Frozen Products
+    paddingVertical: 10,
   },
-  productInfo: {
-    fontSize: scale(16),
-    color: 'grey',
-    fontFamily: 'Ubuntu_400Regular',
+  row: {
+    flexDirection: 'row',
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderColor: '#c8e1ff',
+    color: '#fff',
   },
-  unitInfo: {
-    fontSize: scale(12),
-    color: 'grey',
-    fontFamily: 'Ubuntu_400Regular',
+  greyRow: {
+    backgroundColor: '#f0f0f0', // Light grey for alternating rows
   },
-  productInfoValue: {
-    fontSize: scale(16),
-    fontFamily: 'Ubuntu_700Bold',
+  whiteRow: {
+    backgroundColor: '#ffffff', // White for alternating rows
   },
-  header: {
-    fontSize: scale(22),
+  headerCell: {
+    flex: 1,
+    color: '#fff',
     fontWeight: 'bold',
     textAlign: 'center',
-    marginVertical: verticalScale(8),
+    fontFamily: 'Ubuntu_700Bold', // Use the desired font
+  },
+  cell: {
+    marginLeft: scale(15),
+    width: scale(70),
+    textAlign: 'center',
     fontFamily: 'Ubuntu_700Bold',
-    color: '#03A9F4',
+  },
+  cellFrozen: {
+    marginLeft: scale(15),
+    
+    textAlign: 'center',
+    fontFamily: 'Ubuntu_700Bold',
+    color:'#fff',
+    backgroundColor:'#03A9F4'
+  },
+  updateButton: {
+    color: 'blue',
   },
   paginationContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: verticalScale(14),
+    paddingVertical: 12,
+    paddingHorizontal: 10,
   },
   paginationButton: {
-    fontSize: moderateScale(18),
+    fontSize: 18,
     color: '#03A9F4',
-    fontFamily: 'Ubuntu_700Bold',
+    fontWeight: 'bold',
   },
   paginationText: {
-    fontSize: moderateScale(16),
-    fontFamily: 'Ubuntu_400Regular',
+    fontSize: 16,
   },
   disabledButton: {
     color: 'grey',
   },
-});
+  frozenHeader: {
+    backgroundColor: '#03A9F4',
+    color:'#fff',
+   alignContent:'center',
+   justifyContent:'center',
+    paddingVertical:verticalScale(5)
+  }});
