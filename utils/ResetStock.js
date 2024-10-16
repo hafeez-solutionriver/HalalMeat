@@ -7,14 +7,17 @@ const resetStock = async () => {
   const updates = {};
 
   try {
-    // Get current date in YYYY-MM-DD format
-    const currentDate = new Date().toISOString().split('T')[0];
+    // Get current date in YYYY-MM-DD format based on local time
+    const currentDate = new Date();
+    const formattedDate = `${currentDate.getFullYear()}-${(currentDate.getMonth() + 1)
+      .toString()
+      .padStart(2, '0')}-${currentDate.getDate().toString().padStart(2, '0')}`;
 
     // Fetch the last updated date from the database
     const lastUpdatedSnapshot = await get(lastUpdatedRef);
     const lastUpdatedDate = lastUpdatedSnapshot.exists() ? lastUpdatedSnapshot.val() : null;
 
-    if (lastUpdatedDate === currentDate) {
+    if (lastUpdatedDate === formattedDate) {
       return; // Exit the function as no reset is needed
     }
 
@@ -31,15 +34,14 @@ const resetStock = async () => {
         const reorderQuantity = product.reorderLevel; // Reorder level - available stock (0 after reset)
         updates[`/products/${productId}/reorderQuantity`] = reorderQuantity;
 
-      // Update the products and set the new lastUpdatedDate
-      updates['/lastUpdatedDate'] = currentDate;
+        // Update the products and set the new lastUpdatedDate
+        updates['/lastUpdatedDate'] = formattedDate;
+      }
       await update(ref(db), updates); // Update the entire database at once
-    }
- } else {
+    } else {
       console.log("No products found.");
     }
-}
-   catch (error) {
+  } catch (error) {
     console.error("Error resetting stock and updating reorder quantities:", error);
   }
 };

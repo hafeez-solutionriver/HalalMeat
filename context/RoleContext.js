@@ -10,9 +10,7 @@ export const RoleProvider = ({ children }) => {
   const [userEmail, setUserEmail] = useState('');
   const [userName, setUserName] = useState('');
   const [userPassword, setUserPassword] = useState('');
- 
   const [loading, setLoading] = useState(true); // Loading state for async data
-
   // This will ensure hooks are called consistently on every render
   useEffect(() => {
     const fetchLoginStatus = async () => {

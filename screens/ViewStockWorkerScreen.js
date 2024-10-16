@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState,useContext } from 'react';
 import { View, Text, ScrollView,Alert, StyleSheet, TouchableOpacity } from 'react-native';
 import { getDatabase, ref, update,get,child, onValue } from 'firebase/database';
 import CustomModal from '../components/CustomModel';
 import { scale, verticalScale } from 'react-native-size-matters';
 import StaticMethods from '../utils/OfflineStorage';
-
+import { stopListening } from '../utils/UserInfoChange';
+import { RoleContext } from '../context/RoleContext';
 let currentItem;
 
 const ITEMS_PER_PAGE = 11; 
@@ -32,12 +33,11 @@ const fetchProducts = (setProducts, setTotalPages) => {
   });
 };
 
-const reAuthenticateUser = async () =>{
+const reAuthenticateUser = async (navigation,setIsLoggedIn) =>{
 const userLocalData = await StaticMethods.getStoredData();
 const dbRef = ref(getDatabase(), 'Worker');
 if(userLocalData){
-  console.log('user local data',userLocalData)
-
+console.log('local data in view stock',userLocalData)
   try {
     // Fetch users from Firebase Realtime Database
     const snapshot = await get(child(dbRef,`/${userLocalData.userId}`));
@@ -50,6 +50,19 @@ if(userLocalData){
       else
       {
         console.log('user data has been changed...!');
+        Alert.alert('Session is out!', 'You need to log in again', [
+          
+          {
+            text: 'OK',
+            onPress: async() => {
+              setIsLoggedIn(false);
+              stopListening();
+              await StaticMethods.clearData().then(()=>navigation.navigate('Cover'))
+              ;
+            },
+          },
+        ]);
+        
       }
 
     }
@@ -67,18 +80,18 @@ if(userLocalData){
 };
 
 
-const ViewStockWorkerScreen = () => {
+const ViewStockWorkerScreen = ({navigation}) => {
   const [products, setProducts] = useState([]);
   const [currentPage, setCurrentPage] = useState(1); // Track the current page
   const [totalPages, setTotalPages] = useState(1); // Keep track of the total pages
   const [isModalVisible, setModalVisible] = useState(false);
   const [value, setValue] = useState('');
-
-  const authenticateAndFetch = async ()=>{
-   await reAuthenticateUser().then(()=>fetchProducts(setProducts, setTotalPages));
+  const {setIsLoggedIn } = useContext(RoleContext);
+  const authenticateAndFetch = async (navigation,setIsLoggedIn)=>{
+   await reAuthenticateUser(navigation,setIsLoggedIn).then(()=>fetchProducts(setProducts, setTotalPages));
   }
   useEffect( () => {
-     authenticateAndFetch()
+     authenticateAndFetch(navigation,setIsLoggedIn)
   }, []);
 
   const handleUpdateModal = async (availableStock) => {

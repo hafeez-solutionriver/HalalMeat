@@ -49,7 +49,7 @@ const LoginScreen = ({ navigation }) => {
       userPassword:userPassword
     };
     
-  registerForChange(role,userId,navigation);
+  registerForChange(role,userId,navigation,setIsLoggedIn);
     // Store the entire object at once
 
     await StaticMethods.storeData(data).then(()=>navigation.navigate(route));

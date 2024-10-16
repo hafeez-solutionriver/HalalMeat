@@ -72,9 +72,7 @@ const RoleBasedDrawer = () => {
 
   const navigation = useNavigation();
 
-  // useEffect(() => {
-  //   scheduleBackgroundTask();
-  // }, []);
+
 
   return (
     <Drawer.Navigator
@@ -250,6 +248,7 @@ useEffect(() => {
 }, [fontsLoaded]);
 
 useEffect(()=>{
+  console.log('reset stock is calling in app useEffect')
 resetStock();
 },[])
 
