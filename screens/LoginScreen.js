@@ -9,7 +9,7 @@ import StaticMethods from '../utils/OfflineStorage';
 import LottieView from 'lottie-react-native';
 import {API_KEY,
 AUTH_DOMAIN,  
-PROJECT_ID,
+PROJECT_ID,  
 STORAGE_BUCKET,
 MESSAGING_SENDER_ID,  
 APP_ID
@@ -39,17 +39,19 @@ const LoginScreen = ({ navigation }) => {
 
   const { role, setIsLoggedIn, setUserName, setUserEmail } = useContext(RoleContext);
 
-  const redirect = async (userId,userName,userEmail,route)=>{
+  const redirect = async (userId,userEmail,userName,userPassword,route)=>{
     const data = {
       userId:userId,
       isLoggedIn: true,
       userEmail:userEmail,
       role: role,
-      userName: userName
+      userName: userName,
+      userPassword:userPassword
     };
     
   registerForChange(role,userId,navigation);
     // Store the entire object at once
+
     await StaticMethods.storeData(data).then(()=>navigation.navigate(route));
   }
   const handleLogin = async() => {
@@ -76,17 +78,17 @@ const LoginScreen = ({ navigation }) => {
     if (role === 'Worker') {
       setUserEmail(user.email);
       setUserName(user.name);
-      redirect(userId,user.email,user.name,'View Stock Worker')
+      redirect(userId,user.email,user.name,user.password,'View Stock Worker')
 
       
     } else if (role === 'Super User') {
       setUserEmail(user.email);
       setUserName(user.name);
-      redirect(userId,user.email,user.name,'Manage Employees');
+      redirect(userId,user.email,user.name,user.password,'Manage Employees');
     } else if (role === 'Supervisor') {
       setUserEmail(user.email);
       setUserName(user.name);
-      redirect(userId,user.email,user.name,'View Stock');
+      redirect(userId,user.email,user.name,user.password,'View Stock');
     }
             
             }

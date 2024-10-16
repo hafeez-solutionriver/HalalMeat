@@ -1,7 +1,6 @@
 import { getDatabase, ref, onValue,off } from 'firebase/database';
 
 import StaticMethods from './OfflineStorage';
-import { useNavigation } from '@react-navigation/native';
 let unsubscribeListener = null; // Store the listener so we can unsubscribe later
 
 const registerForChange = (role,userId) =>{

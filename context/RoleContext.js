@@ -9,6 +9,8 @@ export const RoleProvider = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userEmail, setUserEmail] = useState('');
   const [userName, setUserName] = useState('');
+  const [userPassword, setUserPassword] = useState('');
+ 
   const [loading, setLoading] = useState(true); // Loading state for async data
 
   // This will ensure hooks are called consistently on every render
@@ -17,12 +19,13 @@ export const RoleProvider = ({ children }) => {
       try {
         const data = await StaticMethods.getStoredData(); // Fetch the stored object from AsyncStorage
      
-
+         
         if (data) {
           setIsLoggedIn(data.isLoggedIn || false); // Set isLoggedIn from stored data
           setRole(data.role || ''); // Set role from stored data
-          setUserEmail(data.emailValue || '');
-          setUserName(data.nameValue || '');
+          setUserEmail(data.userEmail || '');
+          setUserName(data.userName || '');
+          
         }
       } catch (error) {
         console.error('Error getting stored data:', error);
@@ -34,26 +37,6 @@ export const RoleProvider = ({ children }) => {
     fetchLoginStatus(); // Async function to fetch stored data
   }, []); // Empty dependency array ensures this is only run once on mount
 
-  // This second useEffect will ensure that `AsyncStorage` is updated when any state changes
-  useEffect(() => {
-    const updateStoredData = async () => {
-      try {
-        const dataToStore = {
-          isLoggedIn,
-          role,
-          emailValue: userEmail,
-          nameValue: userName,
-        };
-        await StaticMethods.storeData(dataToStore); // Store the updated object
-      } catch (error) {
-        console.error('Error storing data:', error);
-      }
-    };
-
-    if (!loading) {
-      updateStoredData(); // Store the data only after loading is complete
-    }
-  }, [isLoggedIn, role, userEmail, userName, loading]); // These dependencies ensure the hook runs every time state changes
 
   if (loading) {
     return (
@@ -74,6 +57,8 @@ export const RoleProvider = ({ children }) => {
         setUserEmail,
         userName,
         setUserName,
+        userPassword,
+        setUserPassword
       }}
     >
       {children}

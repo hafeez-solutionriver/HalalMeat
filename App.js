@@ -187,10 +187,11 @@ const RoleBasedDrawer = () => {
               },
               {
                 text: 'YES',
-                onPress: () => {
+                onPress: async() => {
                   stopListening();
                   setIsLoggedIn(false);
-                  StaticMethods.clearData().then(()=>navigation.navigate('Cover'))
+                 
+                  await StaticMethods.clearData().then(()=>navigation.navigate('Cover'))
                   ;
                 },
               },

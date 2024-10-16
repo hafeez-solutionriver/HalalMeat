@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView,Alert, StyleSheet, TouchableOpacity } from 'react-native';
-import { getDatabase, ref, update, onValue } from 'firebase/database';
+import { getDatabase, ref, update,get,child, onValue } from 'firebase/database';
 import CustomModal from '../components/CustomModel';
 import { scale, verticalScale } from 'react-native-size-matters';
+import StaticMethods from '../utils/OfflineStorage';
 
 let currentItem;
 
@@ -31,6 +32,41 @@ const fetchProducts = (setProducts, setTotalPages) => {
   });
 };
 
+const reAuthenticateUser = async () =>{
+const userLocalData = await StaticMethods.getStoredData();
+const dbRef = ref(getDatabase(), 'Worker');
+if(userLocalData){
+  console.log('user local data',userLocalData)
+
+  try {
+    // Fetch users from Firebase Realtime Database
+    const snapshot = await get(child(dbRef,`/${userLocalData.userId}`));
+
+    if (snapshot.exists()) {
+      const user = snapshot.val();
+      if(user.email===userLocalData.userEmail && user.password===userLocalData.userPassword && user.name===userLocalData.userName){
+        console.log('nothing changed in user data');
+      }
+      else
+      {
+        console.log('user data has been changed...!');
+      }
+
+    }
+    else
+    {
+      console.log('user does not exist means user data has been changed')
+    } 
+  } catch (error) {
+    console.error(error);
+    Alert.alert('Error', 'Something went wrong while fetching user data.');
+   
+  }
+}
+
+};
+
+
 const ViewStockWorkerScreen = () => {
   const [products, setProducts] = useState([]);
   const [currentPage, setCurrentPage] = useState(1); // Track the current page
@@ -38,8 +74,11 @@ const ViewStockWorkerScreen = () => {
   const [isModalVisible, setModalVisible] = useState(false);
   const [value, setValue] = useState('');
 
-  useEffect(() => {
-    fetchProducts(setProducts, setTotalPages);
+  const authenticateAndFetch = async ()=>{
+   await reAuthenticateUser().then(()=>fetchProducts(setProducts, setTotalPages));
+  }
+  useEffect( () => {
+     authenticateAndFetch()
   }, []);
 
   const handleUpdateModal = async (availableStock) => {

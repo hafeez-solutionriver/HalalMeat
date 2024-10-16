@@ -21,7 +21,7 @@ class StaticMethods {
   };
 
   // Method to store the entire data object
-  static storeData = async value => {
+  static storeData = async (value) => {
     try {
       await AsyncStorage.setItem('data', JSON.stringify(value));
     } catch (e) {
@@ -30,12 +30,15 @@ class StaticMethods {
   };
 
   static clearData = async () => {
+    
     try {
         const data = {
             isLoggedIn: null,
             userEmail:null,
             role: null,
-            userName: null
+            userName: null,
+            userId:null,
+            userPassword:null
           };
       await AsyncStorage.setItem('data', JSON.stringify(data));
     } catch (e) {
