@@ -17,6 +17,9 @@ import { useFonts, Ubuntu_400Regular, Ubuntu_700Bold } from '@expo-google-fonts/
 import AddProductScreen from './screens/AddProductScreen';
 import StaticMethods from './utils/OfflineStorage';
 import ViewStockSupervisorScreen from './screens/ViewStockSupervisorScreen';
+import resetStock from './utils/ResetStock';
+import { stopListening } from './utils/UserInfoChange';
+
 SplashScreen.preventAutoHideAsync(); // Prevents the splash screen from auto-hiding
 
 const Drawer = createDrawerNavigator();
@@ -69,7 +72,9 @@ const RoleBasedDrawer = () => {
 
   const navigation = useNavigation();
 
- 
+  // useEffect(() => {
+  //   scheduleBackgroundTask();
+  // }, []);
 
   return (
     <Drawer.Navigator
@@ -183,6 +188,7 @@ const RoleBasedDrawer = () => {
               {
                 text: 'YES',
                 onPress: () => {
+                  stopListening();
                   setIsLoggedIn(false);
                   StaticMethods.clearData().then(()=>navigation.navigate('Cover'))
                   ;
@@ -241,6 +247,10 @@ useEffect(() => {
     SplashScreen.hideAsync(); // Hide the splash screen once the app is ready
   }
 }, [fontsLoaded]);
+
+useEffect(()=>{
+resetStock();
+},[])
 
 // Callback to prevent the splash screen from hiding before the app is ready
 const onLayoutRootView = useCallback(async () => {

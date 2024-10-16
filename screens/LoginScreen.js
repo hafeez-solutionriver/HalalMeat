@@ -7,14 +7,23 @@ import {getDatabase, ref, child, get } from 'firebase/database';  // Firebase Re
 import { initializeApp, getApps } from 'firebase/app';
 import StaticMethods from '../utils/OfflineStorage';
 import LottieView from 'lottie-react-native';
+import {API_KEY,
+AUTH_DOMAIN,  
+PROJECT_ID,
+STORAGE_BUCKET,
+MESSAGING_SENDER_ID,  
+APP_ID
+} from '@env'
+import {registerForChange} from '../utils/UserInfoChange';
+
 const firebaseConfig = {
-  apiKey: "AIzaSyD2a7gjEbl5aw0RjA-i4uTFNDgWsIm71x8",
-  authDomain: "halal-meat-19aff.firebaseapp.com",  // Typically derived from project_id
-  projectId: "halal-meat-19aff",
-  storageBucket: "halal-meat-19aff.appspot.com",
-  messagingSenderId: "765038496812",  // Derived from project_number
-  appId: "1:765038496812:android:7bf87975e775cf80c85589",
-  measurementId: "" // Optional, leave blank if not using analytics
+  apiKey: API_KEY,
+  authDomain: AUTH_DOMAIN, 
+  projectId: PROJECT_ID,
+  storageBucket: STORAGE_BUCKET,
+  messagingSenderId: MESSAGING_SENDER_ID,  
+  appId: APP_ID,
+  measurementId: "" 
 };
 
 let app;
@@ -30,14 +39,16 @@ const LoginScreen = ({ navigation }) => {
 
   const { role, setIsLoggedIn, setUserName, setUserEmail } = useContext(RoleContext);
 
-  const redirect = async (userName,userEmail,route)=>{
+  const redirect = async (userId,userName,userEmail,route)=>{
     const data = {
+      userId:userId,
       isLoggedIn: true,
       userEmail:userEmail,
       role: role,
       userName: userName
     };
     
+  registerForChange(role,userId,navigation);
     // Store the entire object at once
     await StaticMethods.storeData(data).then(()=>navigation.navigate(route));
   }
@@ -61,19 +72,21 @@ const LoginScreen = ({ navigation }) => {
               userFound = true;
               setIsLoading(false);
               setIsLoggedIn(true);
+
     if (role === 'Worker') {
       setUserEmail(user.email);
       setUserName(user.name);
-      redirect(user.email,user.name,'View Stock Worker')
+      redirect(userId,user.email,user.name,'View Stock Worker')
+
       
     } else if (role === 'Super User') {
       setUserEmail(user.email);
       setUserName(user.name);
-      redirect(user.email,user.name,'Manage Employees');
+      redirect(userId,user.email,user.name,'Manage Employees');
     } else if (role === 'Supervisor') {
       setUserEmail(user.email);
       setUserName(user.name);
-      redirect(user.email,user.name,'View Stock');
+      redirect(userId,user.email,user.name,'View Stock');
     }
             
             }

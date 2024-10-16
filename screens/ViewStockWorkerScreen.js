@@ -6,8 +6,7 @@ import { scale, verticalScale } from 'react-native-size-matters';
 
 let currentItem;
 
-const ITEMS_PER_PAGE = 11; // Display 12 items per page
-
+const ITEMS_PER_PAGE = 11; 
 // Fetch and listen to product changes
 const fetchProducts = (setProducts, setTotalPages) => {
   const dbRef = ref(getDatabase(), 'products');
@@ -143,7 +142,8 @@ const ViewStockWorkerScreen = () => {
 
   // Render the table rows
   const renderTableRows = () => paginatedProducts.map((item, index) => {
-    const rowStyle = index % 2 === 0 ? styles.greyRow : styles.whiteRow;
+    
+    const rowStyle = item.availableStock == 0 ? styles.redRow : styles.greenRow;
     if (item.type === 'header') {
       return (
         <View key={index} style={[styles.row, styles.frozenHeader]}>
@@ -222,11 +222,11 @@ const styles = StyleSheet.create({
     borderColor: '#c8e1ff',
     color: '#fff',
   },
-  greyRow: {
-    backgroundColor: '#f0f0f0', // Light grey for alternating rows
+  redRow: {
+    backgroundColor: '#FF7F7F', // Light grey for alternating rows
   },
-  whiteRow: {
-    backgroundColor: '#ffffff', // White for alternating rows
+  greenRow: {
+    backgroundColor: '#90EE90', // White for alternating rows
   },
   headerCell: {
     flex: 1,

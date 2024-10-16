@@ -243,8 +243,8 @@ const styles = StyleSheet.create({
   card: {
     height:verticalScale(150),
     marginBottom: verticalScale(12),
-    backgroundColor: 'white',
     borderRadius: moderateScale(10),
+    backgroundColor:'white'
   },
   productName: {
     fontSize: scale(20),
