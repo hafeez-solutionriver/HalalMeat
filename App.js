@@ -174,9 +174,10 @@ const RoleBasedDrawer = () => {
             <Image source={require('./assets/logout.png')} style={{ width: size, height: size }} />
           ),
           title: 'Logout',
-        }} listeners={() => ({
+        }} listeners={({navigation}) => ({
           drawerItemPress: (e) => {
             e.preventDefault();
+            navigation.closeDrawer();
             Alert.alert('Log out', 'Are you sure you want to Log out?', [
               {
                 text: 'Cancel',
@@ -187,9 +188,8 @@ const RoleBasedDrawer = () => {
                 text: 'YES',
                 onPress: async() => {
                   stopListening();
-                  setIsLoggedIn(false);
-                 
-                  await StaticMethods.clearData().then(()=>navigation.navigate('Cover'))
+                  
+                  await StaticMethods.clearData().then(()=>{setIsLoggedIn(false);navigation.navigate('Cover')})
                   ;
                 },
               },
