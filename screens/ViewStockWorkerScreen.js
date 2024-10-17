@@ -46,6 +46,7 @@ console.log('local data in view stock',userLocalData)
       const user = snapshot.val();
       if(user.email===userLocalData.userEmail && user.password===userLocalData.userPassword && user.name===userLocalData.userName){
         console.log('nothing changed in user data');
+        
       }
       else
       {
@@ -69,6 +70,19 @@ console.log('local data in view stock',userLocalData)
     else
     {
       console.log('user does not exist means user data has been changed')
+      
+      Alert.alert('Session is out!', 'You need to log in again', [
+        
+        {
+          text: 'OK',
+          onPress: async() => {
+            setIsLoggedIn(false);
+            stopListening();
+            await StaticMethods.clearData().then(()=>navigation.navigate('Cover'))
+            ;
+          },
+        },
+      ]);
     } 
   } catch (error) {
     console.error(error);

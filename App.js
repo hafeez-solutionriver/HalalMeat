@@ -69,11 +69,6 @@ const RoleBasedDrawer = () => {
   }, [isLoggedIn, role]);
 
  
-
-  const navigation = useNavigation();
-
-
-
   return (
     <Drawer.Navigator
       initialRouteName={initialRouteName}
@@ -248,7 +243,7 @@ useEffect(() => {
 }, [fontsLoaded]);
 
 useEffect(()=>{
-  console.log('reset stock is calling in app useEffect')
+  // console.log('reset stock is calling in app useEffect')
 resetStock();
 },[])
 

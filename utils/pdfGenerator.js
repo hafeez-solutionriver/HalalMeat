@@ -1,51 +1,46 @@
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
-import * as FileSystem from 'expo-file-system';
-
 
 export const generatePDF = async (filter, data,userName='Dummy',setIsLoading) => {
   
   setIsLoading(true);
   // Separate frozen and non-frozen products
-  const nonFrozenProducts = data.filter((item) => !item.frozen);
-  const frozenProducts = data.filter((item) => item.frozen);
-
-  // Sorting logic based on filter
-  const applySort = (arr, field, order) => {
-    if (order === 'none') return arr; // Do nothing if "none" is specified
-    return arr.sort((a, b) => {
-      if (order === 'asc') {
-        return a[field] > b[field] ? 1 : -1;
-      } else if (order === 'desc') {
-        return a[field] < b[field] ? 1 : -1;
-      }
-    });
+  let nonFrozenProducts = data.filter((item) => !item.frozen);
+  let frozenProducts = data.filter((item) => item.frozen);
+  // Function to apply sorting with optional filtering (handles "none" filters)
+  const applySortAndFilter = (arr, field, order) => {
+   
+    console.log('field',field)
+    console.log('order',order)
+      return arr.sort((a, b) => (order === 'asc' ? a[field] > b[field] : a[field] < b[field]) ? 1 : -1);
+    
   };
 
-  // Apply filters on non-frozen products
-  const sortedNonFrozenProducts = applySort(
-    applySort(
-      applySort(
-        applySort(nonFrozenProducts, 'name', filter.productName),
-        'availableStock', filter.availableStockOrder
-      ),
-      'reorderQuantity', filter.reorderQuantity
-    ),
-    'reorderLevel', filter.reorderLevel
-  );
+  // Apply filters and sorting on non-frozen products
+  
+  if(filter.availableStockOrder!="none")
+  {
+    nonFrozenProducts =  applySortAndFilter(nonFrozenProducts, 'availableStock', filter.availableStockOrder);
+    frozenProducts=applySortAndFilter(frozenProducts,'availableStock', filter.availableStockOrder);
+  }
+  else if(filter.productName!="none")
+  {
+      nonFrozenProducts =  applySortAndFilter(nonFrozenProducts, 'name', filter.productName);
+      frozenProducts=applySortAndFilter(frozenProducts,'name', filter.productName);
+  }
+  else if(filter.reorderLevel!="none")
+  {
+    nonFrozenProducts =  applySortAndFilter(nonFrozenProducts, 'reorderLevel', filter.reorderLevel);
+    frozenProducts=applySortAndFilter(frozenProducts,'reorderLevel', filter.reorderLevel);
+  }
+  else if(filter.reorderQuantity!="none")
+    {
+      nonFrozenProducts = applySortAndFilter(nonFrozenProducts, 'reorderQuantity', filter.reorderQuantity);
+      frozenProducts=applySortAndFilter(frozenProducts,'reorderQuantity', filter.reorderQuantity);
+    }
 
-  // Apply filters on frozen products
-  const sortedFrozenProducts = applySort(
-    applySort(
-      applySort(
-        applySort(frozenProducts, 'name', filter.productName),
-        'availableStock', filter.availableStockOrder
-      ),
-      'reorderQuantity', filter.reorderQuantity
-    ),
-    'reorderLevel', filter.reorderLevel
-  );
-
+   
+  
   // Get current date and time to create a unique file name
   const currentDate = new Date();
   const formattedDate = `${currentDate.getFullYear()}-${(
@@ -59,7 +54,7 @@ export const generatePDF = async (filter, data,userName='Dummy',setIsLoading) =>
   const fileName = `${formattedDate}-${formattedTime}-${userName}-Report.pdf`;
 
   // Create report content for non-frozen products
-  const nonFrozenContent = sortedNonFrozenProducts
+  const nonFrozenContent = nonFrozenProducts
     .map((product) => {
       return `
         <tr>
@@ -72,7 +67,7 @@ export const generatePDF = async (filter, data,userName='Dummy',setIsLoading) =>
     .join('');
 
   // Create report content for frozen products
-  const frozenContent = sortedFrozenProducts
+  const frozenContent = frozenProducts
     .map((product) => {
       return `
         <tr>
@@ -139,16 +134,9 @@ export const generatePDF = async (filter, data,userName='Dummy',setIsLoading) =>
     base64: false,
   });
 
-  // Rename the file using expo-file-system
-  const newUri = `${FileSystem.documentDirectory}${fileName}`;
-  await FileSystem.moveAsync({
-    from: uri,
-    to: newUri,
-  });
-
   // Share the PDF using expo-sharing
   if (await Sharing.isAvailableAsync()) {
-    await Sharing.shareAsync(newUri);
+    await Sharing.shareAsync(uri);
   } else {
     console.log('Sharing is not available on this platform.');
   }

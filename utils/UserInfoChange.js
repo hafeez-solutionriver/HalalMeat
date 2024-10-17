@@ -14,7 +14,7 @@ const registerForChange = (role, userId,navigation,setIsLoggedIn) => {
        
       }
        else if(snapshot.exists()) {
-        console.log(`userInfoUpdated..with ${role} with id=>${userId}`);
+        // console.log(`userInfoUpdated..with ${role} with id=>${userId}`);
         Alert.alert('Session is out!', 'You need to log in again', [
           
           {
@@ -36,7 +36,7 @@ const stopListening = () => {
         // Unsubscribing the Firebase onValue listener
         off(ref(getDatabase(), unsubscribeListener()));
         unsubscribeListener = null;
-        console.log("Stopped listening for changes.");
+        // console.log("Stopped listening for changes.");
     }
 };
 

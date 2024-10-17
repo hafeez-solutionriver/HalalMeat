@@ -33,24 +33,40 @@ const GenerateReportSupervisorScreen = () => {
     productName:'none',
     availableStockOrder: 'none',
     reorderLevel: 'none',
-    reoderQuantity:'none'
+    reorderQuantity:'none'
 
   });
 
   useEffect(() => {
     fetchProducts(setProducts);
   }, []);
-
+  const handleFilterChange = (filterName, value) => {
+    setFilter((prevState) => {
+      const newFilter = { ...prevState };
+      newFilter[filterName] = value;
+      if (value !== 'none') {
+        // Reset other filters to "none" if a new filter is selected
+        for (const key in newFilter) {
+          if (key !== filterName) {
+            newFilter[key] = 'none';
+          }
+        }
+      }
+      return newFilter;
+    });
+  };
   const clearFilters = () => {
     setFilter({
-    productName:'None',
-    availableStockOrder: 'None',
-    reorderLevel: 'None',
-    reoderQuantity:'None'
+    productName:'none',
+    availableStockOrder: 'none',
+    reorderLevel: 'none',
+    reorderQuantity:'none'
     });
   };
 
   const handleGenerateReport = async () => {
+    console.log('filter',filter)
+    console.log('product',products)
     generatePDF(filter, products,userName,setIsLoading).then(()=>{clearFilters()});
   };
 
@@ -59,61 +75,38 @@ const GenerateReportSupervisorScreen = () => {
       <Card style={styles.card}>
         <Card.Content>
           <Text style={styles.title}>Generate Stock Report</Text>
-
-
           <View style={styles.section}>
             <Text style={styles.label}>Product Name</Text>
             <RNPickerSelect
-              onValueChange={(value) => setFilter({ ...filter, productName: value })}
-              items={[{label:"None",value:"none"},
-                { label: 'Ascending', value: 'asc' },
-                { label: 'Descending', value: 'desc' },
-              ]}
-              
+              onValueChange={(value) => handleFilterChange('productName', value)}
+              items={[{ label: 'None', value: 'none' }, { label: 'Ascending', value: 'asc' }, { label: 'Descending', value: 'desc' }]}
               value={filter.productName}
-              
             />
           </View>
           <View style={styles.section}>
             <Text style={styles.label}>Available Stock Order</Text>
             <RNPickerSelect
-              onValueChange={(value) => setFilter({ ...filter, availableStockOrder: value })}
-              items={[{label:"None",value:"none"},
-                { label: 'Ascending', value: 'asc' },
-                { label: 'Descending', value: 'desc' },
-              ]}
-              
+              onValueChange={(value) => handleFilterChange('availableStockOrder', value)}
+              items={[{ label: 'None', value: 'none' }, { label: 'Ascending', value: 'asc' }, { label: 'Descending', value: 'desc' }]}
               value={filter.availableStockOrder}
-              
             />
           </View>
-
           <View style={styles.section}>
             <Text style={styles.label}>Reorder Level</Text>
             <RNPickerSelect
-              onValueChange={(value) => setFilter({ ...filter, reorderLevel: value })}
-              items={[{label:"None",value:"none"},
-                { label: 'Ascending', value: 'asc' },
-                { label: 'Descending', value: 'desc' },
-              ]}
+              onValueChange={(value) => handleFilterChange('reorderLevel', value)}
+              items={[{ label: 'None', value: 'none' }, { label: 'Ascending', value: 'asc' }, { label: 'Descending', value: 'desc' }]}
               value={filter.reorderLevel}
             />
           </View>
-
           <View style={styles.section}>
             <Text style={styles.label}>Reorder Quantity</Text>
             <RNPickerSelect
-              onValueChange={(value) => setFilter({ ...filter, reoderQuantity: value })}
-              items={[{label:"None",value:"none"},
-                { label: 'Ascending', value: 'asc' },
-                { label: 'Descending', value: 'desc' },
-              ]}
-              
-              value={filter.reoderQuantity}
-              
+              onValueChange={(value) => handleFilterChange('reorderQuantity', value)}
+              items={[{ label: 'None', value: 'none' }, { label: 'Ascending', value: 'asc' }, { label: 'Descending', value: 'desc' }]}
+              value={filter.reorderQuantity}
             />
           </View>
-
           {/* Buttons Section */}
           <View style={styles.buttonGroup}>
             <Button
@@ -125,8 +118,7 @@ const GenerateReportSupervisorScreen = () => {
             >
               Clear
             </Button>
-
-          { !isLoading && <Button
+            { !isLoading && <Button
               mode="contained"
               onPress={handleGenerateReport}
               style={styles.generateButton}
@@ -136,25 +128,22 @@ const GenerateReportSupervisorScreen = () => {
               Generate
             </Button>}
             {isLoading && <LottieView
-        autoPlay
-        
-        style={{
-          width:scale(70) ,
-          height: verticalScale(50),
-          backgroundColor: '#ffff',
-          borderRadius: 30,
-          paddingVertical: 8,
-        }}
-        // Find more Lottie files at https://lottiefiles.com/featured
-        source={require('../assets/Animation - 1728306291658.json')}
-      />}
+              autoPlay
+              style={{
+                width: scale(70),
+                height: verticalScale(50),
+                backgroundColor: '#ffff',
+                borderRadius: 30,
+                paddingVertical: 8,
+              }}
+              source={require('../assets/Animation - 1728306291658.json')}
+            />}
           </View>
         </Card.Content>
       </Card>
     </View>
   );
 };
-
 export default GenerateReportSupervisorScreen;
 
 const styles = StyleSheet.create({
