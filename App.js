@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState, useCallback } from 'react';
 import { View, Image, StyleSheet, Text, StatusBar, Alert } from 'react-native';
 import { Provider as PaperProvider } from 'react-native-paper';
 import { createDrawerNavigator, DrawerContentScrollView, DrawerItemList } from '@react-navigation/drawer';
-import { useNavigation, NavigationContainer } from '@react-navigation/native';
+import {  NavigationContainer } from '@react-navigation/native';
 import LoginScreen from './screens/LoginScreen'; // Your Login Screen
 import ViewStockWorkerScreen from './screens/ViewStockWorkerScreen';
 import { RoleProvider, RoleContext } from './context/RoleContext'; // Your Role Context

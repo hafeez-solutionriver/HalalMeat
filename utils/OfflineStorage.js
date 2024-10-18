@@ -7,8 +7,10 @@ class StaticMethods {
   
   // Method to get the entire stored data object
   static getStoredData = async () => {
+    
     try {
       const value = await AsyncStorage.getItem('data');
+      console.log('get store data called',value)
       if (value !== null) {
         return JSON.parse(value); // Parse and return the stored data
       } else {
@@ -22,15 +24,16 @@ class StaticMethods {
 
   // Method to store the entire data object
   static storeData = async (value) => {
+    console.log('store data call',value)
     try {
-      await AsyncStorage.setItem('data', JSON.stringify(value));
+      await AsyncStorage.setItem('data', JSON.stringify(value)).then(()=>console.log("successfulyl added data"));
     } catch (e) {
       console.error('Error storing data:', e);
     }
   };
 
   static clearData = async () => {
-    
+    console.log('clear data call')
     try {
         const data = {
             isLoggedIn: null,

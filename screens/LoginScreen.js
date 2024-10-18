@@ -51,7 +51,7 @@ const LoginScreen = ({ navigation }) => {
     
   registerForChange(role,userId,navigation,setIsLoggedIn);
     // Store the entire object at once
-
+    console.log('data in redirect login',data)
     await StaticMethods.storeData(data).then(()=>navigation.navigate(route));
   }
   const handleLogin = async() => {
@@ -90,7 +90,6 @@ const LoginScreen = ({ navigation }) => {
       setUserName(user.name);
       redirect(userId,user.email,user.name,user.password,'View Stock');
     }
-            
             }
           }
   

@@ -34,9 +34,10 @@ const fetchProducts = (setProducts, setTotalPages) => {
 };
 
 const reAuthenticateUser = async (navigation,setIsLoggedIn) =>{
+  console.log('reauthenticate called..')
 const userLocalData = await StaticMethods.getStoredData();
 const dbRef = ref(getDatabase(), 'Worker');
-if(userLocalData){
+if(userLocalData.userId){
 console.log('local data in view stock',userLocalData)
   try {
     // Fetch users from Firebase Realtime Database
@@ -106,7 +107,7 @@ const ViewStockWorkerScreen = ({navigation}) => {
   }
   useEffect( () => {
      authenticateAndFetch(navigation,setIsLoggedIn)
-  }, []);
+  },[]);
 
   const handleUpdateModal = async (availableStock) => {
     const db = getDatabase();

@@ -17,7 +17,6 @@ export const RoleProvider = ({ children }) => {
       try {
         const data = await StaticMethods.getStoredData(); // Fetch the stored object from AsyncStorage
      
-         
         if (data) {
           setIsLoggedIn(data.isLoggedIn || false); // Set isLoggedIn from stored data
           setRole(data.role || ''); // Set role from stored data
