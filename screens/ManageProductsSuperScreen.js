@@ -196,7 +196,7 @@ if(currentPage>totalPages)
           title={`Update Reorder from ${value} To`}
           onUpdate={handleUpdateModal}
           onClose={() => { setModalVisible(false); }}
-          initialValue={value}
+          
         />
       </Card>
     );

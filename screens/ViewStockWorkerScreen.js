@@ -130,8 +130,11 @@ const ViewStockWorkerScreen = ({navigation}) => {
       ...currentItem,
     }).then(() => {
       setModalVisible(false);
+      
       Alert.alert('Success', 'Available Stock Updated!');
-    });
+    }).catch(()=>{ 
+      setModalVisible(false);
+      Alert.alert('Failed!', 'Available Stock could not Updated!');});
   };
 
   const openModal = (item) => {
@@ -257,7 +260,7 @@ const ViewStockWorkerScreen = ({navigation}) => {
         title={`Update Available Stock from ${value} To`}
         onUpdate={handleUpdateModal}
         onClose={() => setModalVisible(false)}
-        initialValue={value}
+        
       />
     </View>
   );
