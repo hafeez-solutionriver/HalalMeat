@@ -48,10 +48,11 @@ const ManageProductsSuperScreen = ({ navigation }) => {
     const db = getDatabase();
     reorderLevel = parseInt(reorderLevel);
 
-    if (isNaN(reorderLevel)) {
+    if (isNaN(reorderLevel) || reorderLevel<0) {
       Alert.alert('Error', 'Reorder Level must be valid numbers.');
       return;
     }
+   
 
     // Calculate reorder quantity
     let reorderQuantity = reorderLevel - Number(currentItem.availableStock);
