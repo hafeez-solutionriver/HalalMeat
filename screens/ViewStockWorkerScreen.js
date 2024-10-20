@@ -114,7 +114,12 @@ const ViewStockWorkerScreen = ({navigation}) => {
     availableStock = Number(availableStock);
 
     if (isNaN(availableStock)) {
-      Alert.alert('Error', 'Available Stock must be valid numbers.');
+      Alert.alert('Error', 'Available Stock must be valid number.');
+      return;
+    }
+    else if(availableStock<0 || availableStock>currentItem.reorderLevel)
+    {
+      Alert.alert('Error', 'Available Stock must be greater than zero and less than Reorder Level.');
       return;
     }
 
