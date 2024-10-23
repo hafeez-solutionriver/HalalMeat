@@ -1,14 +1,18 @@
-import React, {  useState } from 'react';
+import React, {  useState,useEffect } from 'react';
 import { Modal, View, Text, Animated, TouchableOpacity, StyleSheet } from 'react-native';
 import { TextInput } from 'react-native-paper';
 import { moderateScale, scale, verticalScale } from 'react-native-size-matters';
-
-const CustomModal = ({ visible, onUpdate, onClose,title,label }) => {
-const [inputValue, setInputValue] = useState('');
+const CustomModal = ({ visible, onUpdate, onClose, title, label }) => {
+  const [inputValue, setInputValue] = useState('');
   const slideAnim = useState(new Animated.Value(-500))[0]; // Slide animation (off-screen)
   const fadeAnim = useState(new Animated.Value(0))[0]; // Fade animation
 
- 
+  useEffect(() => {
+    if (visible) {
+      startAnimation();
+    }
+  }, [visible]);
+
   const startAnimation = () => {
     Animated.parallel([
       Animated.timing(slideAnim, {
@@ -42,39 +46,32 @@ const [inputValue, setInputValue] = useState('');
   };
 
   const handleUpdate = () => {
-  
     onUpdate(inputValue); // Pass the input value back to the parent
-   setInputValue('');
+    setInputValue('');
   };
-
-  if (visible) {
-    startAnimation();
-  }
 
   return (
     <Modal transparent={true} visible={visible} animationType="none" onRequestClose={closeModal}>
       <Animated.View style={[styles.overlay, { opacity: fadeAnim }]}>
         <Animated.View style={[styles.modalContainer, { transform: [{ translateY: slideAnim }] }]}>
           <Text style={styles.modalTitle}>{title}</Text>
-          
-        
-        <TextInput
-        label={label}
-        value={inputValue}
-        onChangeText={setInputValue}
-        keyboardType="numeric"
-        mode="outlined"
-        style={styles.input}
-        theme={{ colors: { primary: '#03A9F4', text: '#000' } }}
-      />
+
+          <TextInput
+            label={label}
+            value={inputValue}
+            onChangeText={setInputValue}
+            keyboardType="numeric"
+            mode="outlined"
+            style={styles.input}
+            theme={{ colors: { primary: '#03A9F4', text: '#000' } }}
+          />
           <View style={styles.buttonContainer}>
-          <TouchableOpacity onPress={closeModal} style={styles.cancelButton}>
+            <TouchableOpacity onPress={closeModal} style={styles.cancelButton}>
               <Text style={styles.buttonText}>Cancel</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={handleUpdate} style={styles.updateButton}>
               <Text style={styles.buttonText}>Update</Text>
             </TouchableOpacity>
-            
           </View>
         </Animated.View>
       </Animated.View>
