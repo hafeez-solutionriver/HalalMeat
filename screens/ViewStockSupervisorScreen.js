@@ -40,11 +40,18 @@ const ViewStockSupervisorScreen = () => {
   const [products, setProducts] = useState([]);
   const [currentPage, setCurrentPage] = useState(1); // Track the current page
   const [totalPages, setTotalPages] = useState(1); // Keep track of the total pages
- 
+  const [submittedBy, setSubmittedBy] = useState('');
+
  const route = useRoute();
   const { shop} = route.params || {};
   useEffect(() => {
     fetchProducts(setProducts, setTotalPages,shop);
+    const submittedByRef = ref(getDatabase(), `shops/${shop}/submittedBy`);
+    onValue(submittedByRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const workerSubmit = snapshot.val();
+        setSubmittedBy(workerSubmit);
+    }});
   }, []);
 
  
@@ -143,6 +150,11 @@ const ViewStockSupervisorScreen = () => {
 
   return (
     <View style={styles.container}>
+      <Card style={[styles.cardSubmittedBy,{backgroundColor:submittedBy!==''?'#90EE90':'#FF7F7F'}]}>
+        <Card.Content>
+      <Text style={[styles.submissionMessage]}> {submittedBy !== '' ? `${submittedBy} has submitted the stock of ${shop} Shop.` : `Woker has not submitted the stock for ${shop} Shop.`}</Text>
+      </Card.Content>
+      </Card>
       <ScrollView>
         {paginatedProducts.map(renderProductItem)}
       </ScrollView>
@@ -170,7 +182,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgb(250,250,250)',
   },
   card: {
-    height:verticalScale(150),
+    
     marginBottom: verticalScale(12),
     backgroundColor: 'white',
     borderRadius: moderateScale(10),
@@ -220,4 +232,17 @@ const styles = StyleSheet.create({
   disabledButton: {
     color: 'grey',
   },
+  cardSubmittedBy: {
+    // height:verticalScale(150),
+    marginBottom: verticalScale(15),
+  },
+
+
+submissionMessage: {
+    fontSize: scale(16),
+    color: 'white',
+    fontFamily: 'Ubuntu_700Bold',
+    textAlign: 'center',
+  },
+
 });

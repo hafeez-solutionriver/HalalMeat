@@ -4,6 +4,8 @@ const resetStock = async () => {
   const db = getDatabase();
   const productsRef = ref(db, 'products');
   const lastUpdatedRef = ref(db, 'lastUpdatedDate');
+  const shopsRef = ref(db, 'shops'); // Reference to the shops collection
+
   const updates = {};
 
   try {
@@ -33,10 +35,22 @@ const resetStock = async () => {
         updates[`/products/${productId}/availableStock`] = 0;
         const reorderQuantity = product.reorderLevel; // Reorder level - available stock (0 after reset)
         updates[`/products/${productId}/reorderQuantity`] = reorderQuantity;
+      
+      
+      }
 
+
+      // Reset submittedBy for each shop to an empty string
+      const shopsSnapshot = await get(shopsRef);
+      if (shopsSnapshot.exists()) {
+        const shops = shopsSnapshot.val();
+        for (const shopId in shops) {
+          updates[`/shops/${shopId}/submittedBy`] = '';
+        }
+      }
         // Update the products and set the new lastUpdatedDate
         updates['/lastUpdatedDate'] = formattedDate;
-      }
+      
       await update(ref(db), updates); // Update the entire database at once
     } else {
       console.log("No products found.");
