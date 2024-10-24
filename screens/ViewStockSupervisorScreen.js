@@ -152,7 +152,7 @@ const ViewStockSupervisorScreen = () => {
     <View style={styles.container}>
       <Card style={[styles.cardSubmittedBy,{backgroundColor:submittedBy!==''?'#90EE90':'#FF7F7F'}]}>
         <Card.Content>
-      <Text style={[styles.submissionMessage]}> {submittedBy !== '' ? `${submittedBy} has submitted the stock of ${shop} Shop.` : `Woker has not submitted the stock for ${shop} Shop.`}</Text>
+      <Text style={[styles.submissionMessage]}> {submittedBy !== '' ? `${submittedBy.split('_')[0]} has submitted the stock of ${shop} Shop at ${submittedBy.split('_')[1]}.` : `Woker has not submitted the stock for ${shop} Shop.`}</Text>
       </Card.Content>
       </Card>
       <ScrollView>

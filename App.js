@@ -19,6 +19,7 @@ import StaticMethods from './utils/OfflineStorage';
 import ViewStockSupervisorScreen from './screens/ViewStockSupervisorScreen';
 import resetStock from './utils/ResetStock';
 import { stopListening } from './utils/UserInfoChange';
+import { getDatabase, ref, set, update } from 'firebase/database'; // Firebase Realtime Database import
 
 SplashScreen.preventAutoHideAsync(); // Prevents the splash screen from auto-hiding
 
@@ -51,9 +52,25 @@ function CustomDrawerContent(props) {
 
 // Drawer items based on roles
 const RoleBasedDrawer = () => {
-  const { role, isLoggedIn,setIsLoggedIn } = useContext(RoleContext); // Get the current role
+  const { role, isLoggedIn,setIsLoggedIn,userShop,userName } = useContext(RoleContext); // Get the current role
   const [initialRouteName, setInitialRouteName] = useState(''); // Add a loading state
 
+  const updateSubmittedBy = () => {
+
+    const options = { hour: 'numeric', minute: 'numeric', hour12: true };
+    const formatter = new Intl.DateTimeFormat('en-US', options);
+    const time = formatter.format(new Date());
+    const dbRef = ref(getDatabase(), `shops/${userShop}/submittedBy`);
+    const newSubmittedBy = `${userName}_${time}`
+    // Update the submittedBy field
+    set(dbRef, newSubmittedBy)
+      .then(() => {
+        Alert.alert('Stock Update','Stock update sent to Supervisor Successfully');
+      })
+      .catch((error) => {
+        Alert.alert('Error Stock Update',error);
+      });
+  };
   useEffect(() => {
 
     setInitialRouteName(
@@ -92,6 +109,38 @@ const RoleBasedDrawer = () => {
             ),
           }}
           component={ViewStockWorkerScreen}
+        />
+      )}
+      {role === 'Worker' && (
+        <Drawer.Screen
+          name="Submit"
+          options={{
+            title: 'Submit Stock',
+            drawerIcon: ({ color, size }) => (
+              <Image source={require('./assets/submit.png')} style={{ width: size, height: size }} />
+            ),
+          }}
+          listeners={({navigation}) => ({
+            drawerItemPress: (e) => {
+              e.preventDefault();
+              navigation.closeDrawer();
+              Alert.alert('Stock Submission to Supervisor', 'Are you sure you want to Submit stock?', [
+                {
+                  text: 'Cancel',
+                  onPress: () => null,
+                  style: 'cancel',
+                },
+                {
+                  text: 'YES',
+                  onPress: () => {
+                   
+                    updateSubmittedBy();
+                  },
+                },
+              ]);
+            },
+          })}
+          component={View}
         />
       )}
       

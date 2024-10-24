@@ -37,9 +37,10 @@ const LoginScreen = ({ navigation }) => {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false)
 
-  const { role, setIsLoggedIn, setUserName, setUserEmail } = useContext(RoleContext);
+  const { role, setIsLoggedIn, setUserName, setUserEmail,setUserShop } = useContext(RoleContext);
 
   const redirect = async (userId,userEmail,userName,userPassword,userShop,route)=>{
+    setUserShop(userShop);
     const data = {
       userId:userId,
       isLoggedIn: true,
