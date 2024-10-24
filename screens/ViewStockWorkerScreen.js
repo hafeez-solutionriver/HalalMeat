@@ -7,10 +7,11 @@ import StaticMethods from '../utils/OfflineStorage';
 import { stopListening } from '../utils/UserInfoChange';
 import { RoleContext } from '../context/RoleContext';
 let currentItem;
-
+let shop;
 const ITEMS_PER_PAGE = 11; 
 // Fetch and listen to product changes
 const fetchProducts = (setProducts, setTotalPages) => {
+
   const dbRef = ref(getDatabase(), 'products');
   onValue(dbRef, (snapshot) => {
     if (snapshot.exists()) {
@@ -19,10 +20,14 @@ const fetchProducts = (setProducts, setTotalPages) => {
         id: productId,
         ...products[productId],
       }));
-      setProducts(productList);
+      
+      console.log('shop on filter..',shop)
+      let newProducts = productList.filter(product => product.shop == shop); // Replace `shopArgument` with your actual variable
+      console.log("after filtering",newProducts)
+      setProducts(newProducts);
 
       // Calculate total pages based on products excluding headers
-      const nonHeaderItems = productList.filter(item => !item.type || item.type !== 'header');
+      const nonHeaderItems = newProducts.filter(item => !item.type || item.type !== 'header');
       const totalPages = Math.ceil(nonHeaderItems.length / ITEMS_PER_PAGE);
       setTotalPages(totalPages);
     } else {
@@ -95,15 +100,24 @@ console.log('local data in view stock',userLocalData)
 };
 
 
-const ViewStockWorkerScreen = ({navigation}) => {
+const ViewStockWorkerScreen = ({navigation,route}) => {
   const [products, setProducts] = useState([]);
   const [currentPage, setCurrentPage] = useState(1); // Track the current page
   const [totalPages, setTotalPages] = useState(1); // Keep track of the total pages
   const [isModalVisible, setModalVisible] = useState(false);
   const [value, setValue] = useState('');
-  const {setIsLoggedIn } = useContext(RoleContext);
+  const {setIsLoggedIn,userShop,setUserShop } = useContext(RoleContext);
+  shop=userShop;
+  const {userShop:passedUserShop} = route.params ||{}
+  useEffect(() => {
+    if (passedUserShop) {
+      setUserShop(passedUserShop);
+    }
+  }, [passedUserShop]);
+
+
   const authenticateAndFetch = async (navigation,setIsLoggedIn)=>{
-   await reAuthenticateUser(navigation,setIsLoggedIn).then(()=>fetchProducts(setProducts, setTotalPages));
+   await reAuthenticateUser(navigation,setIsLoggedIn).then(()=>fetchProducts(setProducts, setTotalPages,userShop));
   }
   useEffect( () => {
      authenticateAndFetch(navigation,setIsLoggedIn)

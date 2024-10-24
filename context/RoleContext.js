@@ -8,6 +8,7 @@ export const RoleProvider = ({ children }) => {
   const [role, setRole] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userEmail, setUserEmail] = useState('');
+  const [userShop, setUserShop] = useState('');
   const [userName, setUserName] = useState('');
   const [userPassword, setUserPassword] = useState('');
   const [loading, setLoading] = useState(true); // Loading state for async data
@@ -22,7 +23,8 @@ export const RoleProvider = ({ children }) => {
           setRole(data.role || ''); // Set role from stored data
           setUserEmail(data.userEmail || '');
           setUserName(data.userName || '');
-          
+          setUserShop(data.userShop ||'')
+        
         }
       } catch (error) {
         console.error('Error getting stored data:', error);
@@ -55,7 +57,9 @@ export const RoleProvider = ({ children }) => {
         userName,
         setUserName,
         userPassword,
-        setUserPassword
+        setUserPassword,
+        userShop,
+        setUserShop
       }}
     >
       {children}

@@ -25,7 +25,7 @@ SplashScreen.preventAutoHideAsync(); // Prevents the splash screen from auto-hid
 const Drawer = createDrawerNavigator();
 
 function CustomDrawerContent(props) {
-  const { role, userEmail, userName } = useContext(RoleContext); // Get the current role
+  const { role, userEmail, userName,userShop } = useContext(RoleContext); // Get the current role
 
   let headerIcon;
   if (role === 'Worker') {
@@ -40,6 +40,7 @@ function CustomDrawerContent(props) {
     <DrawerContentScrollView {...props}>
       <View style={styles.drawerHeader}>
         <Image source={headerIcon} style={styles.profileImage} />
+       {role==="Worker" && <Text style={styles.profileTitle}>{userShop} Shop</Text>}
         <Text style={styles.profileTitle}>{userName}</Text>
         <Text style={styles.profileSubtitle}>{userEmail}</Text>
       </View>
@@ -105,23 +106,50 @@ const RoleBasedDrawer = () => {
           component={ManageEmployeesSuperScreen}
         />
       )}
-      
+      {/* 
+      Adding three shops View Products Screens...
+      */}
       {role === 'Super User' && (
         <Drawer.Screen
-          name="Manage Product"
+          name="Hounslow Shop Products"
           options={{
             drawerIcon: ({ color, size }) => (
-              <Image source={require('./assets/manageproduct.png')} style={{ width: size, height: size }} />
-            ),
+              <Image source={require('./assets/shops.png')} style={{ width: size, height: size }} />
+            ),title:"1.Hounslow Shop"
           }}
           component={ManageProductsSuperScreen}
+          initialParams={{shop:"Hounslow"}}
         />
       )}
-      
-      {role === 'Supervisor' && (
+      {role === 'Super User' && (
+        <Drawer.Screen
+          name="South hall Shop"
+          options={{
+            drawerIcon: ({ color, size }) => (
+              <Image source={require('./assets/shops.png')} style={{ width: size, height: size }} />
+            ),title:"2.South hall Shop"
+          }}
+          component={ManageProductsSuperScreen}
+          initialParams={{shop:"South hall"}}
+        />
+      )}
+      {role === 'Super User' && (
+        <Drawer.Screen
+          name="Hayes Shop Products"
+          options={{
+            drawerIcon: ({ color, size }) => (
+              <Image source={require('./assets/shops.png')} style={{ width: size, height: size }} />
+            ),title:"3.Hayes Shop"
+          }}
+          component={ManageProductsSuperScreen}
+          initialParams={{shop:"Hayes"}}
+
+        />
+      )}
+
+      {/* {role === 'Supervisor' && (
         <Drawer.Screen
           name="View Stock"
-          
           options={{
             drawerIcon: ({ color, size }) => (
               <Image source={require('./assets/viewstock.png')} style={{ width: size, height: size }} />
@@ -129,8 +157,8 @@ const RoleBasedDrawer = () => {
           }}
           component={ViewStockSupervisorScreen}
         />
-      )}
-      
+      )} */}
+      {/* Adding 3 shops products page to supervisor role */}
       {role === 'Supervisor' && (
         <Drawer.Screen
           name="Generate Report"
@@ -142,6 +170,44 @@ const RoleBasedDrawer = () => {
           component={GenerateReportSupervisorScreen}
         />
       )}
+      {role === 'Supervisor' && (
+        <Drawer.Screen
+          name="Hounslow Shop Products"
+          options={{
+            drawerIcon: ({ color, size }) => (
+              <Image source={require('./assets/shops.png')} style={{ width: size, height: size }} />
+            ),title:"1.Hounslow Shop"
+          }}
+          component={ViewStockSupervisorScreen}
+          initialParams={{shop:"Hounslow"}}
+        />
+      )}
+      {role === 'Supervisor' && (
+        <Drawer.Screen
+          name="South hall Shop"
+          options={{
+            drawerIcon: ({ color, size }) => (
+              <Image source={require('./assets/shops.png')} style={{ width: size, height: size }} />
+            ),title:"2.South hall Shop"
+          }}
+          component={ViewStockSupervisorScreen}
+          initialParams={{shop:"South hall"}}
+        />
+      )}
+      {role === 'Supervisor' && (
+        <Drawer.Screen
+          name="Hayes Shop Products"
+          options={{
+            drawerIcon: ({ color, size }) => (
+              <Image source={require('./assets/shops.png')} style={{ width: size, height: size }} />
+            ),title:"3.Hayes Shop"
+          }}
+          component={ViewStockSupervisorScreen}
+          initialParams={{shop:"Hayes"}}
+
+        />
+      )}
+      
       
       {!isLoggedIn && <Drawer.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />}
       

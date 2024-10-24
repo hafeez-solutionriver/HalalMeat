@@ -41,7 +41,8 @@ class StaticMethods {
             role: null,
             userName: null,
             userId:null,
-            userPassword:null
+            userPassword:null,
+            userShop:null
           };
       await AsyncStorage.setItem('data', JSON.stringify(data));
     } catch (e) {

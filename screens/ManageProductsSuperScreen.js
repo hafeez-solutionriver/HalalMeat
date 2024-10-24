@@ -4,12 +4,12 @@ import { Card, Button } from 'react-native-paper';
 import { moderateScale, scale, verticalScale } from 'react-native-size-matters';
 import { getDatabase, ref, remove, update, onValue } from 'firebase/database'; // Firebase Realtime Database import
 import CustomModal from '../components/CustomModel';
-
+import { useRoute } from '@react-navigation/native';
 let currentItem;
 
 const ITEMS_PER_PAGE = 3; // Display 3 items per page
 
-const fetchProducts = async (setProducts, setTotalPages) => {
+const fetchProducts = async (setProducts, setTotalPages,shop) => {
   const dbRef = ref(getDatabase(), 'products');
   await onValue(dbRef, (snapshot) => {
     if (snapshot.exists()) {
@@ -18,10 +18,14 @@ const fetchProducts = async (setProducts, setTotalPages) => {
         id: productId,
         ...products[productId],
       }));
-      setProducts([...productList]); // Store all products
+      //now here filter product accoridng to shop 
+    
+      let newProducts = productList.filter(product => product.shop == shop); // Replace `shopArgument` with your actual variable
+console.log('products got after filter',newProducts)
+      setProducts([...newProducts]); // Store all products
 
       // Calculate the total number of pages after receiving the products
-      const nonHeaderItems = productList.filter(item => !item.type || item.type !== 'header');
+      const nonHeaderItems = newProducts.filter(item => !item.type || item.type !== 'header');
       const totalPages = Math.ceil(nonHeaderItems.length / ITEMS_PER_PAGE);
       setTotalPages(totalPages);
     } else {
@@ -38,10 +42,13 @@ const ManageProductsSuperScreen = ({ navigation }) => {
   const [totalPages, setTotalPages] = useState(1); // Keep track of the total pages
   const [isModalVisible, setModalVisible] = useState(false);
   const [value, setValue] = useState('');
+  const route = useRoute();
 
+  const { shop} = route.params || {};
+  console.log('shop value get in manage prodcts screen',shop);
   // Whenever products update, recalculate the total pages
   useEffect(() => {
-    fetchProducts(setProducts, setTotalPages);
+    fetchProducts(setProducts, setTotalPages,shop);
   }, []);
 
   const handleUpdateModal = async (reorderLevel) => {
@@ -242,10 +249,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#03A9F4',
   },
   card: {
-    height:verticalScale(150),
+    // height:verticalScale(150),
     marginBottom: verticalScale(12),
     borderRadius: moderateScale(10),
-    backgroundColor:'white'
+    backgroundColor:'white',
+    flex:1
   },
   productName: {
     fontSize: scale(20),

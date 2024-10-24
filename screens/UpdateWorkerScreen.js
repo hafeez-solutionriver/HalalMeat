@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Text, Alert } from 'react-native';
-import { TextInput, Button } from 'react-native-paper';
+import { TextInput, Button,RadioButton } from 'react-native-paper';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { scale, verticalScale, moderateScale } from 'react-native-size-matters';
 import { getDatabase, ref, update, push, get, query, orderByChild, equalTo } from 'firebase/database'; // Firebase functions
@@ -16,6 +16,7 @@ const UpdateWorkerScreen = () => {
   const [workerName, setWorkerName] = useState('');
   const [workerEmail, setWorkerEmail] = useState('');
   const [workerPassword, setWorkerPassword] = useState('');
+  const [shop,setShop] = useState('Hounslow');
 
   useEffect(() => {
     if (isEdit && item) {
@@ -23,11 +24,13 @@ const UpdateWorkerScreen = () => {
       setWorkerName(item.name);
       setWorkerEmail(item.email.toLowerCase());
       setWorkerPassword(item.password);
+      setShop(item.shop);
     } else {
       // Clear fields when adding a new worker
       setWorkerName('');
       setWorkerEmail('');
       setWorkerPassword('');
+      setShop('Hounslow');
     }
   }, [isEdit, item]);
 
@@ -35,7 +38,7 @@ const UpdateWorkerScreen = () => {
     const db = getDatabase();
     const workersRef = ref(db, 'Worker');
 
-    if (!workerName || !workerEmail || !workerPassword) {
+    if (!workerName || !workerEmail || !workerPassword ||!shop) {
       Alert.alert('Error', 'All fields are required.');
       return;
     }
@@ -64,6 +67,7 @@ const UpdateWorkerScreen = () => {
             name: workerName,
             email: workerEmail.toLowerCase(),
             password: workerPassword,
+            shop:shop
           }).then(() => {
             Alert.alert('Success', 'Employee updated successfully!', [{ text: 'OK', onPress: () => navigation.goBack() }]);
           });
@@ -89,6 +93,7 @@ const UpdateWorkerScreen = () => {
             name: workerName,
             email: workerEmail.toLowerCase(),
             password: workerPassword,
+            shop:shop
           }).then(() => {
             Alert.alert('Success', 'New Employee added successfully!', [{ text: 'OK', onPress: () => navigation.goBack() }]);
           });
@@ -129,6 +134,27 @@ const UpdateWorkerScreen = () => {
         style={styles.input}
         theme={{ colors: { primary: '#03A9F4', text: '#000' } }}
       />
+      {/* Shops Radio Button */}
+      <View style={styles.radioGroup}>
+        <Text style={styles.radioLabel}>Shop</Text>
+        <RadioButton.Group onValueChange={setShop} value={shop}>
+        <View style={styles.radioButtonRow}>
+          <View style={styles.radioButtonContainer}>
+            <RadioButton value="Hounslow" color="#03A9F4" />
+            <Text style={styles.radioButtonLabel}>Hounslow</Text>
+          </View>
+          <View style={styles.radioButtonContainer}>
+            <RadioButton value="South hall" color="#03A9F4" />
+            <Text style={styles.radioButtonLabel}>South hall</Text>
+          </View>
+          <View style={styles.radioButtonContainer}>
+            <RadioButton value="Hayes" color="#03A9F4" />
+            <Text style={styles.radioButtonLabel}>Hayes</Text>
+          </View>
+
+          </View>
+        </RadioButton.Group>
+      </View>
 
       <Button
         mode="contained"
@@ -159,6 +185,27 @@ const styles = StyleSheet.create({
     width: '100%',
     marginBottom: verticalScale(16),
     backgroundColor: 'white',
+  },
+  radioLabel: {
+    fontSize: scale(16),
+    marginStart: moderateScale(5),
+    marginBottom: verticalScale(8),
+    fontFamily: 'Ubuntu_400Regular',
+  },
+  radioButtonRow: {
+    flexDirection: 'row', // Make the radio buttons align horizontally
+    flexWrap: 'wrap', // Wrap to the next row if there are more items
+     // Space the items evenly
+  },
+  radioButtonContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: verticalScale(8),
+    width: '30%', // Adjust the width for two items per row
+  },
+  radioButtonLabel: {
+    fontSize: scale(14),
+    fontFamily: 'Ubuntu_400Regular',
   },
   submitButton: {
     width: '100%',

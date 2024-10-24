@@ -2,7 +2,6 @@ import React, { useContext, useEffect } from 'react';
 import { View, StyleSheet, Image, Text, TouchableOpacity } from 'react-native';
 import { RoleContext } from '../context/RoleContext'; // Role Context
 import { scale, verticalScale, moderateScale } from 'react-native-size-matters';
-import StaticMethods from '../utils/OfflineStorage';
 const CoverPage = ({ navigation }) => {
   const { setRole, isLoggedIn } = useContext(RoleContext); // Use RoleContext to set role
 

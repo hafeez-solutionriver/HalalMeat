@@ -37,22 +37,31 @@ const LoginScreen = ({ navigation }) => {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false)
 
-  const { role, setIsLoggedIn, setUserName, setUserEmail } = useContext(RoleContext);
+  const { role, setIsLoggedIn, setUserName, setUserEmail,setUserShop } = useContext(RoleContext);
 
-  const redirect = async (userId,userEmail,userName,userPassword,route)=>{
+  const redirect = async (userId,userEmail,userName,userPassword,userShop,route)=>{
     const data = {
       userId:userId,
       isLoggedIn: true,
       userEmail:userEmail,
       role: role,
       userName: userName,
-      userPassword:userPassword
+      userPassword:userPassword,
+      userShop:userShop
     };
     
   registerForChange(role,userId,navigation,setIsLoggedIn);
+
     // Store the entire object at once
     console.log('data in redirect login',data)
-    await StaticMethods.storeData(data).then(()=>navigation.navigate(route));
+    console.log('route',route)
+    // await StaticMethods.storeData(data).then(()=>navigation.navigate(route,{userShop:userShop}));
+    try {
+      await StaticMethods.storeData(data);
+      navigation.navigate(route, { userShop: userShop });
+    } catch (error) {
+      console.error('Error navigating:', error);
+    }
   }
   const handleLogin = async() => {
     
@@ -78,17 +87,16 @@ const LoginScreen = ({ navigation }) => {
     if (role === 'Worker') {
       setUserEmail(user.email);
       setUserName(user.name);
-      redirect(userId,user.email,user.name,user.password,'View Stock Worker')
+      redirect(userId,user.email,user.name,user.password,user.shop,'View Stock Worker')
 
-      
     } else if (role === 'Super User') {
       setUserEmail(user.email);
       setUserName(user.name);
-      redirect(userId,user.email,user.name,user.password,'Manage Employees');
+      redirect(userId,user.email,user.name,user.password,null,'Manage Employees');
     } else if (role === 'Supervisor') {
       setUserEmail(user.email);
       setUserName(user.name);
-      redirect(userId,user.email,user.name,user.password,'View Stock');
+      redirect(userId,user.email,user.name,user.password,null,'Generate Report');
     }
             }
           }

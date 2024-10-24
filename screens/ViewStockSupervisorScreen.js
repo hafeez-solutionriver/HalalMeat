@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, Alert, TouchableOpacity } from 'react-native';
-import { Card, Button } from 'react-native-paper';
+import { Card } from 'react-native-paper';
 import { moderateScale, scale, verticalScale } from 'react-native-size-matters';
-import { getDatabase, ref, update, onValue } from 'firebase/database'; // Firebase Realtime Database import
+import { getDatabase, ref, onValue } from 'firebase/database'; // Firebase Realtime Database import
 
+import { useRoute } from '@react-navigation/native';
 
 const ITEMS_PER_PAGE = 3; // Display 3 items per page
 
 // Fetch and listen to product changes
-const fetchProducts = (setProducts, setTotalPages) => {
+const fetchProducts = (setProducts, setTotalPages,shop) => {
   const dbRef = ref(getDatabase(), 'products');
   onValue(dbRef, (snapshot) => {
     if (snapshot.exists()) {
@@ -17,10 +18,13 @@ const fetchProducts = (setProducts, setTotalPages) => {
         id: productId,
         ...products[productId],
       }));
-      setProducts(productList);
+
+      let newProducts = productList.filter(product => product.shop == shop); // Replace `shopArgument` with your actual variable
+
+      setProducts(newProducts);
 
       // Calculate total pages based on products excluding headers
-      const nonHeaderItems = productList.filter(item => !item.type || item.type !== 'header');
+      const nonHeaderItems = newProducts.filter(item => !item.type || item.type !== 'header');
       const totalPages = Math.ceil(nonHeaderItems.length / ITEMS_PER_PAGE);
       setTotalPages(totalPages);
     } else {
@@ -31,17 +35,16 @@ const fetchProducts = (setProducts, setTotalPages) => {
   });
 };
 
-const ViewStockSupervisorScreen = ({ navigation }) => {
+const ViewStockSupervisorScreen = () => {
   
   const [products, setProducts] = useState([]);
   const [currentPage, setCurrentPage] = useState(1); // Track the current page
   const [totalPages, setTotalPages] = useState(1); // Keep track of the total pages
  
- 
-  
-
+ const route = useRoute();
+  const { shop} = route.params || {};
   useEffect(() => {
-    fetchProducts(setProducts, setTotalPages);
+    fetchProducts(setProducts, setTotalPages,shop);
   }, []);
 
  

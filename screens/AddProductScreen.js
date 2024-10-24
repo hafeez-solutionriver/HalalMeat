@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, Text, Alert } from 'react-native';
-import { TextInput, Button, RadioButton, Menu, Divider } from 'react-native-paper';
+import { TextInput, Button, RadioButton } from 'react-native-paper';
 import { scale, verticalScale, moderateScale } from 'react-native-size-matters';
 import { getDatabase, ref, push } from 'firebase/database';
 
@@ -11,7 +11,14 @@ const AddProductScreen = ({ navigation }) => {
   const [reorderLevel, setReorderLevel] = useState('');
   const [frozen, setFrozen] = useState('yes'); // Radio button value for frozen
   const [unit, setUnit] = useState('Piece'); // Dropdown state for unit
-  
+  /*
+  Three shops are there ..
+  1.Hounslow
+  2.South hall
+  3.Hayes
+  */
+  const [shop,setShop] = useState('Hounslow');
+
 
   // Function to handle submitting the new product
   const handleSubmit = async () => {
@@ -19,7 +26,7 @@ const AddProductScreen = ({ navigation }) => {
     const productsRef = ref(db, 'products'); // Reference to the 'Products' node
 
     // Validate inputs
-    if (!productName ||   !reorderLevel || !unit) {
+    if (!productName ||   !reorderLevel || !unit || !shop) {
       Alert.alert('Error', 'All fields are required.');
       return;
     }
@@ -48,11 +55,13 @@ const AddProductScreen = ({ navigation }) => {
       reorderQuantity: reorderQuantity,
       frozen: frozen === 'yes',
       unit: unit, // Add unit to database
+      shop:shop
     }).then(()=>{
         setProductName('');
         setReorderLevel('');
         setFrozen('yes');
         setUnit('Piece');
+        setShop('Hounslow')
         Alert.alert('Success', 'New product added successfully!', [
             {text: 'OK', onPress: () => navigation.navigate('Manage Product')},
           ]);
@@ -128,6 +137,28 @@ const AddProductScreen = ({ navigation }) => {
           </View>
         </RadioButton.Group>
       </View>
+
+      {/* Shops Radio Button */}
+      <View style={styles.radioGroup}>
+        <Text style={styles.radioLabel}>Shop</Text>
+        <RadioButton.Group onValueChange={setShop} value={shop}>
+        <View style={styles.radioButtonRow}>
+          <View style={styles.radioButtonContainer}>
+            <RadioButton value="Hounslow" color="#03A9F4" />
+            <Text style={styles.radioButtonLabel}>Hounslow</Text>
+          </View>
+          <View style={styles.radioButtonContainer}>
+            <RadioButton value="South hall" color="#03A9F4" />
+            <Text style={styles.radioButtonLabel}>South hall</Text>
+          </View>
+          <View style={styles.radioButtonContainer}>
+            <RadioButton value="Hayes" color="#03A9F4" />
+            <Text style={styles.radioButtonLabel}>Hayes</Text>
+          </View>
+
+          </View>
+        </RadioButton.Group>
+      </View>
       {/* Submit Button */}
       <Button
         mode="contained"
@@ -159,9 +190,6 @@ const styles = StyleSheet.create({
     marginBottom: verticalScale(16),
     backgroundColor: 'white',
   },
-  radioGroup: {
-    
-  },
   radioLabel: {
     fontSize: scale(16),
     marginStart: moderateScale(5),
@@ -180,7 +208,7 @@ const styles = StyleSheet.create({
     width: '30%', // Adjust the width for two items per row
   },
   radioButtonLabel: {
-    fontSize: scale(16),
+    fontSize: scale(14),
     fontFamily: 'Ubuntu_400Regular',
   },
   submitButton: {
