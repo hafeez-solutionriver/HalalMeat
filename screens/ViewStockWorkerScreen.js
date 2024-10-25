@@ -162,15 +162,15 @@ const ViewStockWorkerScreen = ({navigation,route}) => {
     const currentHours = currentTime.getHours();
     const currentMinutes = currentTime.getMinutes();
   
-    // Check if the current time is less than 6:00 PM
-    if (currentHours < 18 || (currentHours === 18 && currentMinutes === 0)) {
+    // Check if the current time is less than 5:00 PM
+    if (currentHours < 17 || (currentHours === 17 && currentMinutes === 0)) {
       currentItem = item;
       setValue(item.availableStock);
       setModalVisible(true);
     } else {
       Alert.alert(
         'Update Does not Allowed!',
-        'You cannot perform this action after 6:00 PM.',
+        'You cannot perform this action after 5:00 PM.',
         [{ text: 'OK' }]
       );
     }

@@ -128,8 +128,8 @@ const RoleBasedDrawer = () => {
     const currentHours = currentTime.getHours();
     const currentMinutes = currentTime.getMinutes();
   
-    // Check if the current time is less than 6:00 PM
-    if (currentHours < 18 || (currentHours === 18 && currentMinutes === 0)) {
+    // Check if the current time is less than 5:00 PM
+    if (currentHours < 17 || (currentHours === 17 && currentMinutes === 0)) {
       Alert.alert('Stock Submission to Supervisor', 'Are you sure you want to Submit stock?', [
         {
           text: 'Cancel',
@@ -146,7 +146,7 @@ const RoleBasedDrawer = () => {
     } else {
       Alert.alert(
         'Submission is not Allowed!',
-        'You cannot perform this action after 6:00 PM.',
+        'You cannot perform this action after 5:00 PM.',
         [{ text: 'OK' }]
       );
     }
