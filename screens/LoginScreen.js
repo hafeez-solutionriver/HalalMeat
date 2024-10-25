@@ -54,7 +54,7 @@ const LoginScreen = ({ navigation }) => {
   registerForChange(role,userId,navigation,setIsLoggedIn);
     // Store the entire object at once
     console.log('data in redirect login',data)
-    await StaticMethods.storeData(data).then(()=>navigation.navigate(route));
+    await StaticMethods.storeData(data).then(()=>navigation.navigate(route,{userShop:userShop}));
   }
   const handleLogin = async() => {
     
@@ -80,6 +80,7 @@ const LoginScreen = ({ navigation }) => {
     if (role === 'Worker') {
       setUserEmail(user.email);
       setUserName(user.name);
+      console.log('user.shop inside of role===worker ',user.shop)
       redirect(userId,user.email,user.name,user.password,user.shop,'View Stock Worker')
 
     } else if (role === 'Super User') {

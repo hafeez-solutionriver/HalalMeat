@@ -10,8 +10,9 @@ let currentItem;
 let shop;
 const ITEMS_PER_PAGE = 11; 
 // Fetch and listen to product changes
-const fetchProducts = (setProducts, setTotalPages) => {
-
+const fetchProducts = (setProducts, setTotalPages,userShop) => {
+console.log('userShop in fetch products',userShop)
+console.log('shop in fetch products',shop)
   const dbRef = ref(getDatabase(), 'products');
   onValue(dbRef, (snapshot) => {
     if (snapshot.exists()) {
@@ -106,22 +107,21 @@ const ViewStockWorkerScreen = ({navigation,route}) => {
   const [totalPages, setTotalPages] = useState(1); // Keep track of the total pages
   const [isModalVisible, setModalVisible] = useState(false);
   const [value, setValue] = useState('');
-  const {setIsLoggedIn,userShop,setUserShop } = useContext(RoleContext);
+  const {setIsLoggedIn,userShop } = useContext(RoleContext);
   shop=userShop;
+  console.log('route params in View Stock Worker Screen',route.params)
   const {userShop:passedUserShop} = route.params ||{}
-  useEffect(() => {
-    if (passedUserShop) {
-      setUserShop(passedUserShop);
-    }
-  }, [passedUserShop]);
-
-
+  if(passedUserShop)
+  {
+    console.log('inside of')
+    shop=passedUserShop;
+  }
   const authenticateAndFetch = async (navigation,setIsLoggedIn)=>{
-   await reAuthenticateUser(navigation,setIsLoggedIn).then(()=>fetchProducts(setProducts, setTotalPages,userShop));
+   await reAuthenticateUser(navigation,setIsLoggedIn).then(()=>fetchProducts(setProducts, setTotalPages,shop));
   }
   useEffect( () => {
      authenticateAndFetch(navigation,setIsLoggedIn)
-  },[]);
+  },[userShop]);
 
   const handleUpdateModal = async (availableStock) => {
     const db = getDatabase();
