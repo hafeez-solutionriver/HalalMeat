@@ -1,11 +1,12 @@
 import React, { useState, useEffect,useContext } from 'react';
-import { View, StyleSheet} from 'react-native';
-import { Button, Card, Text } from 'react-native-paper';
+import { View, StyleSheet,Alert} from 'react-native';
+import { Button, Card, Text,RadioButton } from 'react-native-paper';
 import RNPickerSelect from 'react-native-picker-select';
 import { generatePDF } from '../utils/pdfGenerator';
 import { getDatabase, ref, onValue } from 'firebase/database';
 import { RoleContext } from '../context/RoleContext';
 import LottieView from 'lottie-react-native';
+import ShopChoicesModal from '../components/ShopChoicesModel';
 import { scale,verticalScale } from 'react-native-size-matters';
 // Fetch products from Firebase
 const fetchProducts = (setProducts) => {
@@ -28,6 +29,10 @@ const fetchProducts = (setProducts) => {
 const GenerateReportSupervisorScreen = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [products, setProducts] = useState([]);
+  const [reportType,setReportType]=useState('Consolidated');
+  const [modalVisible, setModalVisible] = useState(false);
+  const options = ["Hounslow", "South hall", "Hayes"];
+
   const {userName} = useContext(RoleContext)
   const [filter, setFilter] = useState({
     productName:'none',
@@ -63,18 +68,33 @@ const GenerateReportSupervisorScreen = () => {
     reorderQuantity:'none'
     });
   };
+ 
+  const handleOptionPress = (option)=>{
+    console.log('this option clicekd',option)
+    setModalVisible(false);
+    generatePDF(filter, products,userName,option,setIsLoading).then(()=>{clearFilters()});
 
+
+  }
   const handleGenerateReport = async () => {
-    console.log('filter',filter)
-    console.log('product',products)
-    generatePDF(filter, products,userName,setIsLoading).then(()=>{clearFilters()});
+    
+if(reportType==='Consolidated')
+{
+  generatePDF(filter, products,userName,reportType,setIsLoading).then(()=>{clearFilters()});
+
+}
+else{
+setModalVisible(true);
+}
+    
   };
 
   return (
     <View style={styles.container}>
+    <Text style={styles.title}>Generate Stock Report</Text>
       <Card style={styles.card}>
         <Card.Content>
-          <Text style={styles.title}>Generate Stock Report</Text>
+          <Text style={styles.subTitle}>Filters</Text>
           <View style={styles.section}>
             <Text style={styles.label}>Product Name</Text>
             <RNPickerSelect
@@ -107,6 +127,21 @@ const GenerateReportSupervisorScreen = () => {
               value={filter.reorderQuantity}
             />
           </View>
+
+          <Text style={styles.subTitle}>Report type</Text>
+
+        <RadioButton.Group onValueChange={setReportType} value={reportType}>
+        <View style={styles.radioButtonRow}>
+          <View style={styles.radioButtonContainer}>
+            <RadioButton value="Consolidated" color="#03A9F4" />
+            <Text style={styles.radioButtonLabel}>Consolidated</Text>
+          </View>
+          <View style={styles.radioButtonContainer}>
+            <RadioButton value="Individual" color="#03A9F4" />
+            <Text style={styles.radioButtonLabel}>Individual</Text>
+          </View>
+          </View>
+        </RadioButton.Group>
           {/* Buttons Section */}
           <View style={styles.buttonGroup}>
             <Button
@@ -141,6 +176,14 @@ const GenerateReportSupervisorScreen = () => {
           </View>
         </Card.Content>
       </Card>
+      <ShopChoicesModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        options={options}
+        title="Choose an option"
+        message="Select a shop from the following:"
+        handleOptionPress={handleOptionPress}
+      />
     </View>
   );
 };
@@ -152,24 +195,29 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: '#f9f9f9',
     flexDirection:'column',
-    alignContent:'center',
-    justifyContent:'center'
   },
   card: {
-    
-    padding: 10,
+    // marginTop:5,
+    padding: 5,
     backgroundColor: '#fff',
     borderRadius: 8,
   },
   title: {
+    
     fontSize: 24,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    fontFamily: 'Ubuntu_700Bold', // Assuming you've loaded this font
+  },
+  subTitle: {
+    fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 20,
     textAlign: 'center',
     fontFamily: 'Ubuntu_700Bold', // Assuming you've loaded this font
   },
   section: {
-    marginBottom: 20,
+    marginBottom: 10,
   },
   label: {
     fontSize: 16,
@@ -183,7 +231,6 @@ const styles = StyleSheet.create({
   clearButton: {
     borderColor: '#6200ee',
     borderWidth: 1,
-    
     borderRadius: 30,
     paddingVertical: 8,
   },
@@ -199,6 +246,21 @@ const styles = StyleSheet.create({
   generateButtonText: {
     color: '#fff',
     fontFamily: 'Ubuntu_700Bold',
+  },
+  radioButtonRow: {
+    flexDirection: 'row', // Make the radio buttons align horizontally
+    flexWrap: 'wrap', // Wrap to the next row if there are more items
+     // Space the items evenly
+  },
+  radioButtonContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: verticalScale(8),
+    width: '50%', // Adjust the width for two items per row
+  },
+  radioButtonLabel: {
+    fontSize: scale(14),
+    fontFamily: 'Ubuntu_400Regular',
   },
 });
 
