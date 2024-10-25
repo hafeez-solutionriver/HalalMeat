@@ -1,15 +1,13 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, Alert, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState, useRef } from 'react';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Animated } from 'react-native';
 import { Card } from 'react-native-paper';
 import { moderateScale, scale, verticalScale } from 'react-native-size-matters';
-import { getDatabase, ref, onValue } from 'firebase/database'; // Firebase Realtime Database import
-
+import { getDatabase, ref, onValue } from 'firebase/database';
 import { useRoute } from '@react-navigation/native';
 
-const ITEMS_PER_PAGE = 3; // Display 3 items per page
+const ITEMS_PER_PAGE = 3;
 
-// Fetch and listen to product changes
-const fetchProducts = (setProducts, setTotalPages,shop) => {
+const fetchProducts = (setProducts, setTotalPages, shop) => {
   const dbRef = ref(getDatabase(), 'products');
   onValue(dbRef, (snapshot) => {
     if (snapshot.exists()) {
@@ -19,11 +17,9 @@ const fetchProducts = (setProducts, setTotalPages,shop) => {
         ...products[productId],
       }));
 
-      let newProducts = productList.filter(product => product.shop == shop); // Replace `shopArgument` with your actual variable
-
+      let newProducts = productList.filter(product => product.shop === shop);
       setProducts(newProducts);
 
-      // Calculate total pages based on products excluding headers
       const nonHeaderItems = newProducts.filter(item => !item.type || item.type !== 'header');
       const totalPages = Math.ceil(nonHeaderItems.length / ITEMS_PER_PAGE);
       setTotalPages(totalPages);
@@ -36,32 +32,64 @@ const fetchProducts = (setProducts, setTotalPages,shop) => {
 };
 
 const ViewStockSupervisorScreen = () => {
-  
   const [products, setProducts] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1); // Track the current page
-  const [totalPages, setTotalPages] = useState(1); // Keep track of the total pages
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [submittedBy, setSubmittedBy] = useState('');
 
- const route = useRoute();
-  const { shop} = route.params || {};
+  const route = useRoute();
+  const { shop } = route.params || {};
+
+  // Animation setup
+  const bounceValue = useRef(new Animated.Value(0)).current;
+
   useEffect(() => {
-    fetchProducts(setProducts, setTotalPages,shop);
+    fetchProducts(setProducts, setTotalPages, shop);
     const submittedByRef = ref(getDatabase(), `shops/${shop}/submittedBy`);
     onValue(submittedByRef, (snapshot) => {
       if (snapshot.exists()) {
         const workerSubmit = snapshot.val();
+        if(workerSubmit!=='')
+          {startAnimation()}
+        else{
+          bounceValue.stopAnimation(); // Stop animation on unmount
+
+        };
         setSubmittedBy(workerSubmit);
-    }});
-  }, []);
+      }
+    });
 
- 
+    // Start infinite bounce animation
+    const startAnimation = () => {
+      bounceValue.setValue(0); // Reset the bounce value
+      Animated.loop(
+        Animated.sequence([
+          Animated.spring(bounceValue, {
+            toValue: 1,
+            friction: 2,
+            tension: 40,
+            useNativeDriver: true,
+          }),
+          Animated.spring(bounceValue, {
+            toValue: 0,
+            friction: 2,
+            tension: 40,
+            useNativeDriver: true,
+          }),
+        ])
+      ).start();
+    };
 
+    
 
-  // Filter products by 'frozen' status
+    return () => {
+      bounceValue.stopAnimation(); // Stop animation on unmount
+    };
+  }, [shop]);
+
   const frozenFalseProducts = products.filter(product => product.frozen === false);
   const frozenTrueProducts = products.filter(product => product.frozen === true);
 
-  // Combine lists with a header row for frozen products
   let combinedData = [
     ...frozenFalseProducts,
     ...(frozenTrueProducts.length > 0
@@ -69,7 +97,6 @@ const ViewStockSupervisorScreen = () => {
       : []),
   ];
 
-  // Paginate the products list, excluding the header from counting as a product
   const paginatedProducts = [];
   let itemCount = 0;
   let index = (currentPage - 1) * ITEMS_PER_PAGE;
@@ -77,15 +104,14 @@ const ViewStockSupervisorScreen = () => {
   const hasHeaderBeforeIndex = (index) => {
     for (let i = 0; i < index; i++) {
       if (combinedData[i].type === 'header') {
-        return true; // Found a header before the current index
+        return true;
       }
     }
     return false;
   };
 
-  // Adjust index for Frozen header
   if (index > 0 && hasHeaderBeforeIndex(index)) {
-    index += 1; // Adjust for the Frozen header
+    index += 1;
   }
 
   let headerAdded = false;
@@ -142,24 +168,36 @@ const ViewStockSupervisorScreen = () => {
             Reorder Quantity: <Text style={styles.productInfoValue}>{item.reorderQuantity}<Text style={styles.unitInfo}>{formatUnit(item.reorderQuantity, item.unit)}</Text></Text>
           </Text>
         </Card.Content>
-        
-       
       </Card>
     );
   };
 
+  const animatedStyle = {
+    transform: [
+      {
+        scale: bounceValue.interpolate({
+          inputRange: [0, 1.2],
+          outputRange: [1, 1.1], // Adjust the scale as needed
+        }),
+      },
+    ],
+  };
+
   return (
     <View style={styles.container}>
-      <Card style={[styles.cardSubmittedBy,{backgroundColor:submittedBy!==''?'#90EE90':'#FF7F7F'}]}>
+     <Animated.View style={[animatedStyle, styles.cardSubmittedBy, { backgroundColor: submittedBy !== '' ? '#90EE90' : '#FF7F7F' }]}>
         <Card.Content>
-      <Text style={[styles.submissionMessage]}> {submittedBy !== '' ? `${submittedBy.split('_')[0]} has submitted the stock of ${shop} Shop at ${submittedBy.split('_')[1]}.` : `Woker has not submitted the stock for ${shop} Shop.`}</Text>
-      </Card.Content>
-      </Card>
+          <Text style={[styles.submissionMessage]}>
+            {submittedBy !== '' ? `${submittedBy.split('_')[0]} has submitted the stock of ${shop} Shop at ${submittedBy.split('_')[1]}.` : `Worker has not submitted the stock for ${shop} Shop.`}
+          </Text>
+        </Card.Content>
+      </Animated.View>
+      
+
       <ScrollView>
         {paginatedProducts.map(renderProductItem)}
       </ScrollView>
 
-      {/* Pagination Controls */}
       <View style={styles.paginationContainer}>
         <TouchableOpacity onPress={handlePreviousPage} disabled={currentPage === 1}>
           <Text style={[styles.paginationButton, currentPage === 1 && styles.disabledButton]}>Previous</Text>
@@ -175,6 +213,7 @@ const ViewStockSupervisorScreen = () => {
 
 export default ViewStockSupervisorScreen;
 
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -182,7 +221,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgb(250,250,250)',
   },
   card: {
-    
     marginBottom: verticalScale(12),
     backgroundColor: 'white',
     borderRadius: moderateScale(10),
@@ -233,16 +271,14 @@ const styles = StyleSheet.create({
     color: 'grey',
   },
   cardSubmittedBy: {
-    // height:verticalScale(150),
     marginBottom: verticalScale(15),
+    height:verticalScale(50),
+    borderRadius:moderateScale(10)
   },
-
-
-submissionMessage: {
+  submissionMessage: {
     fontSize: scale(16),
     color: 'white',
     fontFamily: 'Ubuntu_700Bold',
     textAlign: 'center',
   },
-
 });

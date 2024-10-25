@@ -124,20 +124,33 @@ const RoleBasedDrawer = () => {
             drawerItemPress: (e) => {
               e.preventDefault();
               navigation.closeDrawer();
-              Alert.alert('Stock Submission to Supervisor', 'Are you sure you want to Submit stock?', [
-                {
-                  text: 'Cancel',
-                  onPress: () => null,
-                  style: 'cancel',
-                },
-                {
-                  text: 'YES',
-                  onPress: () => {
-                   
-                    updateSubmittedBy();
-                  },
-                },
-              ]);
+              const currentTime = new Date();
+    const currentHours = currentTime.getHours();
+    const currentMinutes = currentTime.getMinutes();
+  
+    // Check if the current time is less than 6:00 PM
+    if (currentHours < 18 || (currentHours === 18 && currentMinutes === 0)) {
+      Alert.alert('Stock Submission to Supervisor', 'Are you sure you want to Submit stock?', [
+        {
+          text: 'Cancel',
+          onPress: () => null,
+          style: 'cancel',
+        },
+        {
+          text: 'YES',
+          onPress: () => {
+            updateSubmittedBy();
+          },
+        },
+      ]);
+    } else {
+      Alert.alert(
+        'Submission is not Allowed!',
+        'You cannot perform this action after 6:00 PM.',
+        [{ text: 'OK' }]
+      );
+    }
+             
             },
           })}
           component={View}

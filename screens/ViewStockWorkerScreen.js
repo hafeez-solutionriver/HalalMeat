@@ -157,9 +157,23 @@ const ViewStockWorkerScreen = ({navigation,route}) => {
   };
 
   const openModal = (item) => {
-    currentItem = item;
-    setValue(item.availableStock);
-    setModalVisible(true);
+    // Get current local time
+    const currentTime = new Date();
+    const currentHours = currentTime.getHours();
+    const currentMinutes = currentTime.getMinutes();
+  
+    // Check if the current time is less than 6:00 PM
+    if (currentHours < 18 || (currentHours === 18 && currentMinutes === 0)) {
+      currentItem = item;
+      setValue(item.availableStock);
+      setModalVisible(true);
+    } else {
+      Alert.alert(
+        'Update Does not Allowed!',
+        'You cannot perform this action after 6:00 PM.',
+        [{ text: 'OK' }]
+      );
+    }
   };
 
   // Filter products by 'frozen' status
