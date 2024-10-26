@@ -107,7 +107,7 @@ const ViewStockWorkerScreen = ({navigation,route}) => {
   const [totalPages, setTotalPages] = useState(1); // Keep track of the total pages
   const [isModalVisible, setModalVisible] = useState(false);
   const [value, setValue] = useState('');
-  const {setIsLoggedIn,userShop } = useContext(RoleContext);
+  const {setIsLoggedIn,userShop,hasSubmittedStock,setHasSubmittedStock } = useContext(RoleContext);
   shop=userShop;
   console.log('route params in View Stock Worker Screen',route.params)
   const {userShop:passedUserShop} = route.params ||{}
@@ -121,6 +121,14 @@ const ViewStockWorkerScreen = ({navigation,route}) => {
   }
   useEffect( () => {
      authenticateAndFetch(navigation,setIsLoggedIn)
+     const submittedByRef = ref(getDatabase(), `shops/${shop}/submittedBy`);
+    onValue(submittedByRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const workerSubmit = snapshot.val();
+        setHasSubmittedStock(workerSubmit!=='');
+        
+      }
+    });
   },[userShop]);
 
   const handleUpdateModal = async (availableStock) => {
@@ -158,6 +166,7 @@ const ViewStockWorkerScreen = ({navigation,route}) => {
 
   const openModal = (item) => {
     // Get current local time
+    if(!hasSubmittedStock){
     const currentTime = new Date();
     const currentHours = currentTime.getHours();
     const currentMinutes = currentTime.getMinutes();
@@ -174,7 +183,16 @@ const ViewStockWorkerScreen = ({navigation,route}) => {
         [{ text: 'OK' }]
       );
     }
-  };
+  }
+  else
+  {
+    Alert.alert(
+      'Update Does not Allowed!',
+      'Stock udpated has already submitted to supervisor',
+      [{ text: 'OK' }]
+    );
+  }
+}
 
   // Filter products by 'frozen' status
   const frozenFalseProducts = products.filter(product => product.frozen === false);

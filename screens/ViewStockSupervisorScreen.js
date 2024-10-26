@@ -53,7 +53,6 @@ const ViewStockSupervisorScreen = () => {
           {startAnimation()}
         else{
           bounceValue.stopAnimation(); // Stop animation on unmount
-
         };
         setSubmittedBy(workerSubmit);
       }
@@ -188,7 +187,7 @@ const ViewStockSupervisorScreen = () => {
      <Animated.View style={[animatedStyle, styles.cardSubmittedBy, { backgroundColor: submittedBy !== '' ? '#90EE90' : '#FF7F7F' }]}>
         <Card.Content>
           <Text style={[styles.submissionMessage]}>
-            {submittedBy !== '' ? `${submittedBy.split('_')[0]} has submitted the stock of ${shop} Shop at ${submittedBy.split('_')[1]}.` : `Worker has not submitted the stock for ${shop} Shop.`}
+            {submittedBy !== '' ? `${submittedBy.split('_')[0]} has submitted the stock of ${shop} Shop at ${submittedBy.split('_')[1]} ${submittedBy.split('_')[2]}.` : `Worker has not submitted the stock for ${shop} Shop.`}
           </Text>
         </Card.Content>
       </Animated.View>

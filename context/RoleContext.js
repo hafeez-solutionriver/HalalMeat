@@ -11,6 +11,7 @@ export const RoleProvider = ({ children }) => {
   const [userShop, setUserShop] = useState('');
   const [userName, setUserName] = useState('');
   const [userPassword, setUserPassword] = useState('');
+  const [hasSubmittedStock,setHasSubmittedStock]=useState(null);
   const [loading, setLoading] = useState(true); // Loading state for async data
   // This will ensure hooks are called consistently on every render
   useEffect(() => {
@@ -59,7 +60,9 @@ export const RoleProvider = ({ children }) => {
         userPassword,
         setUserPassword,
         userShop,
-        setUserShop
+        setUserShop,
+        hasSubmittedStock,
+        setHasSubmittedStock
       }}
     >
       {children}

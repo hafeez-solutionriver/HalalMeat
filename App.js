@@ -52,25 +52,33 @@ function CustomDrawerContent(props) {
 
 // Drawer items based on roles
 const RoleBasedDrawer = () => {
-  const { role, isLoggedIn,setIsLoggedIn,userShop,userName } = useContext(RoleContext); // Get the current role
+  const { role, isLoggedIn,setIsLoggedIn,userShop,userName,hasSubmittedStock } = useContext(RoleContext); // Get the current role
   const [initialRouteName, setInitialRouteName] = useState(''); // Add a loading state
 
   const updateSubmittedBy = () => {
-
+   
     const options = { hour: 'numeric', minute: 'numeric', hour12: true };
     const formatter = new Intl.DateTimeFormat('en-US', options);
-    const time = formatter.format(new Date());
+    const timeFormatted = formatter.format(new Date());
+    
+    // Separate time and period (AM/PM)
+    const [time] = timeFormatted.split(" ");
     const dbRef = ref(getDatabase(), `shops/${userShop}/submittedBy`);
-    const newSubmittedBy = `${userName}_${time}`
+    // Construct newSubmittedBy with separated AM/PM
+    console.log('time check ',`${userName}_${time.split(' ')[0]}}`)
+    const newSubmittedBy = `${userName}_${time.split(' ')[0]}`;
+    
     // Update the submittedBy field
     set(dbRef, newSubmittedBy)
       .then(() => {
-        Alert.alert('Stock Update','Stock update sent to Supervisor Successfully');
+        Alert.alert('Stock Update', 'Stock update sent to Supervisor Successfully');
       })
       .catch((error) => {
-        Alert.alert('Error Stock Update',error);
+        Alert.alert('Error Stock Update', error.message);
       });
-  };
+ 
+};
+  
   useEffect(() => {
 
     setInitialRouteName(
@@ -124,6 +132,7 @@ const RoleBasedDrawer = () => {
             drawerItemPress: (e) => {
               e.preventDefault();
               navigation.closeDrawer();
+              if(!hasSubmittedStock){
               const currentTime = new Date();
     const currentHours = currentTime.getHours();
     const currentMinutes = currentTime.getMinutes();
@@ -147,6 +156,14 @@ const RoleBasedDrawer = () => {
       Alert.alert(
         'Submission is not Allowed!',
         'You cannot perform this action after 5:00 PM.',
+        [{ text: 'OK' }]
+      );
+    }}
+    else
+    {
+      Alert.alert(
+        'Update Does not Allowed!',
+        'Stock udpated has already submitted to supervisor',
         [{ text: 'OK' }]
       );
     }

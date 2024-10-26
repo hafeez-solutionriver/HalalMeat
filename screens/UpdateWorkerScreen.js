@@ -47,6 +47,12 @@ const UpdateWorkerScreen = () => {
       Alert.alert('Error', 'Invalid email address format!.');
       return;
     }
+    else if(!StaticMethods.isValidPassword(workerPassword))
+      {
+        Alert.alert('Error', 'Password should have at least length of 8.');
+        return;
+      }
+    
 
     if (isEdit) {
       // Check if email exists (excluding the current worker being edited)
