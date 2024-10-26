@@ -1,5 +1,6 @@
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
+import * as FileSystem from 'expo-file-system';
 
 export const generatePDF = async (filter, data, userName = 'Dummy', reportType, setIsLoading) => {
   setIsLoading(true);
@@ -53,43 +54,52 @@ export const generatePDF = async (filter, data, userName = 'Dummy', reportType, 
   const createShopTable = (shop, products) => {
     const nonFrozenContent = products.nonFrozen.map(product => `
       <tr>
-        <td>${product.name}</td>
-        <td>${product.availableStock}</td>
-        <td>${product.reorderLevel}</td>
-        <td>${product.reorderQuantity}</td>
+        <td style="border: 1px solid black; padding: 5px;">${product.name}</td>
+        <td style="border: 1px solid black; padding: 5px;">${product.availableStock}</td>
+        <td style="border: 1px solid black; padding: 5px;">${product.reorderLevel}</td>
+        <td style="border: 1px solid black; padding: 5px;">${product.reorderQuantity}</td>
+        <td style="border: 1px solid black; padding: 5px;">${product.unit}</td>
+        <td style="border: 1px solid black; padding: 5px;"></td>
       </tr>`).join('');
-
+  
     const frozenContent = products.frozen.map(product => `
       <tr>
-        <td>${product.name}</td>
-        <td>${product.availableStock}</td>
-        <td>${product.reorderLevel}</td>
-        <td>${product.reorderQuantity}</td>
+        <td style="border: 1px solid black; padding: 5px;">${product.name}</td>
+        <td style="border: 1px solid black; padding: 5px;">${product.availableStock}</td>
+        <td style="border: 1px solid black; padding: 5px;">${product.reorderLevel}</td>
+        <td style="border: 1px solid black; padding: 5px;">${product.reorderQuantity}</td>
+        <td style="border: 1px solid black; padding: 5px;">${product.unit}</td>
+        <td style="border: 1px solid black; padding: 5px;"></td>
       </tr>`).join('');
-
+  
     return `
       <h2>${shop} Shop Products</h2>
-      <table>
+      <table style="border-collapse: collapse; width: 100%;">
         <tr>
-          <th>Product Name</th>
-          <th>Available Stock</th>
-          <th>Reorder Level</th>
-          <th>Reorder Quantity</th>
+          <th style="border: 1px solid black; padding: 5px;">Product Name</th>
+          <th style="border: 1px solid black; padding: 5px;">Available Stock</th>
+          <th style="border: 1px solid black; padding: 5px;">Reorder Level</th>
+          <th style="border: 1px solid black; padding: 5px;">Reorder Quantity</th>
+          <th style="border: 1px solid black; padding: 5px;">Unit</th>
+          <th style="border: 1px solid black; padding: 5px;">Comments</th>
         </tr>
         ${nonFrozenContent}
       </table>
       <h3>Frozen Products</h3>
-      <table>
+      <table style="border-collapse: collapse; width: 100%;">
         <tr>
-          <th>Product Name</th>
-          <th>Available Stock</th>
-          <th>Reorder Level</th>
-          <th>Reorder Quantity</th>
+          <th style="border: 1px solid black; padding: 5px;">Product Name</th>
+          <th style="border: 1px solid black; padding: 5px;">Available Stock</th>
+          <th style="border: 1px solid black; padding: 5px;">Reorder Level</th>
+          <th style="border: 1px solid black; padding: 5px;">Reorder Quantity</th>
+          <th style="border: 1px solid black; padding: 5px;">Unit</th>
+          <th style="border: 1px solid black; padding: 5px;">Comments</th>
         </tr>
         ${frozenContent}
       </table>
     `;
   };
+  
 
   let reportContent = `<style>
       table {
@@ -109,7 +119,7 @@ export const generatePDF = async (filter, data, userName = 'Dummy', reportType, 
         background-color: #f2f2f2;
       }
     </style>
-    <h1>${reportType==='Consolidated'?'Consolidate':`${reportType} Shop`} Stock Report</h1>`;
+    <h1>${reportType==='Consolidated'?'Consolidated':`${reportType} Shop`} Stock Report</h1>`;
 
   // Generate content based on report type
   if (reportType === 'Consolidated') {
@@ -126,15 +136,22 @@ export const generatePDF = async (filter, data, userName = 'Dummy', reportType, 
     </footer>
   `;
 
+  const fileName = `${formattedDate}-${formattedTime}-Report.pdf`;
+
   // Generate PDF using expo-print
   const { uri } = await Print.printToFileAsync({
     html: reportContent,
     base64: false,
   });
 
+  const newUri = `${FileSystem.documentDirectory}${fileName}`;
+  await FileSystem.moveAsync({
+    from: uri,
+    to: newUri,
+  });
   // Share the PDF using expo-sharing
   if (await Sharing.isAvailableAsync()) {
-    await Sharing.shareAsync(uri);
+    await Sharing.shareAsync(newUri);
   } else {
     console.log('Sharing is not available on this platform.');
   }
