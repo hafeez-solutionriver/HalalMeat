@@ -1,80 +1,39 @@
-import React, {  useState,useEffect } from 'react';
-import { Modal, View, Text, Animated, TouchableOpacity, StyleSheet } from 'react-native';
-import { TextInput } from 'react-native-paper';
+import React, { useState } from 'react';
+import { Modal, View, Text, TextInput, TouchableOpacity, StyleSheet} from 'react-native';
 import { moderateScale, scale, verticalScale } from 'react-native-size-matters';
+
 const CustomModal = ({ visible, onUpdate, onClose, title, label }) => {
   const [inputValue, setInputValue] = useState('');
-  const slideAnim = useState(new Animated.Value(-500))[0]; // Slide animation (off-screen)
-  const fadeAnim = useState(new Animated.Value(0))[0]; // Fade animation
-
-  useEffect(() => {
-    if (visible) {
-      startAnimation();
-    }
-  }, [visible]);
-
-  const startAnimation = () => {
-    Animated.parallel([
-      Animated.timing(slideAnim, {
-        toValue: 0, // Move to position 0 (onscreen)
-        duration: 500,
-        useNativeDriver: true,
-      }),
-      Animated.timing(fadeAnim, {
-        toValue: 1, // Fade in
-        duration: 500,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  };
-
-  const closeModal = () => {
-    Animated.parallel([
-      Animated.timing(slideAnim, {
-        toValue: -500, // Slide out
-        duration: 300,
-        useNativeDriver: true,
-      }),
-      Animated.timing(fadeAnim, {
-        toValue: 0, // Fade out
-        duration: 300,
-        useNativeDriver: true,
-      }),
-    ]).start(() => {
-      onClose(); // Close the modal after the animation
-    });
-  };
+ 
 
   const handleUpdate = () => {
-    onUpdate(inputValue); // Pass the input value back to the parent
+   
+    onUpdate(inputValue);
     setInputValue('');
   };
 
   return (
-    <Modal transparent={true} visible={visible} animationType="none" onRequestClose={closeModal}>
-      <Animated.View style={[styles.overlay, { opacity: fadeAnim }]}>
-        <Animated.View style={[styles.modalContainer, { transform: [{ translateY: slideAnim }] }]}>
+    <Modal transparent={true} visible={visible} animationType="fade" onRequestClose={onClose} >
+    <View style={styles.modalBackground}>
+    <View style={styles.modalContainer}>
           <Text style={styles.modalTitle}>{title}</Text>
-
           <TextInput
-            label={label}
+            placeholder={label}
             value={inputValue}
             onChangeText={setInputValue}
             keyboardType="numeric"
-            mode="outlined"
             style={styles.input}
-            theme={{ colors: { primary: '#03A9F4', text: '#000' } }}
           />
           <View style={styles.buttonContainer}>
-            <TouchableOpacity onPress={closeModal} style={styles.cancelButton}>
+            <TouchableOpacity onPress={onClose} style={styles.cancelButton}>
               <Text style={styles.buttonText}>Cancel</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={handleUpdate} style={styles.updateButton}>
               <Text style={styles.buttonText}>Update</Text>
             </TouchableOpacity>
           </View>
-        </Animated.View>
-      </Animated.View>
+       </View>
+       </View>
     </Modal>
   );
 };
@@ -86,26 +45,38 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Dark transparent overlay
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
+  modalBackground: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+ 
   modalContainer: {
     width: scale(300),
     backgroundColor: 'white',
     padding: moderateScale(20),
     borderRadius: moderateScale(10),
-    elevation: 5, // Shadow for Android
+    elevation: 5,
   },
   modalTitle: {
     fontSize: scale(18),
     fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: verticalScale(10),
-    fontFamily: 'Ubuntu_700Bold', // Fabric font
+    fontFamily: 'Ubuntu_700Bold',
   },
   input: {
     width: '100%',
     marginBottom: verticalScale(16),
     backgroundColor: 'white',
+    borderWidth: 1,
+    borderColor: '#03A9F4',
+    paddingHorizontal: moderateScale(10),
+    paddingVertical: verticalScale(8),
+    borderRadius: moderateScale(5),
   },
   buttonContainer: {
     flexDirection: 'row',
@@ -127,6 +98,6 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: moderateScale(16),
     fontWeight: 'bold',
-    fontFamily: 'Ubuntu_700Bold', // Fabric font
+    fontFamily: 'Ubuntu_700Bold',
   },
 });
