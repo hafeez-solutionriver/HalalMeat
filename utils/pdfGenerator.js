@@ -119,7 +119,7 @@ export const generatePDF = async (filter, data, userName = 'Dummy', reportType, 
         background-color: #f2f2f2;
       }
     </style>
-    <h1>${reportType==='Consolidated'?'Consolidated':`${reportType} Shop`} Stock Report</h1>`;
+    <h1>${reportType} Stock Report</h1>`;
 
   // Generate content based on report type
   if (reportType === 'Consolidated') {
